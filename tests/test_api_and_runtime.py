@@ -106,7 +106,7 @@ class TestCanonicalAndRuntime(unittest.TestCase):
 
     def test_gemini_adapter_simulated_fallback(self):
         """Correction 19: Verify Gemini adapter operates cleanly without credentials."""
-        adapter = GeminiProviderAdapter()
+        adapter = GeminiProviderAdapter(api_key="")
         res = adapter.execute_prompt("Test prompt for SunkGuard")
         self.assertTrue(res.success)
         self.assertFalse(res.is_live)

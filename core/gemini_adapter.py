@@ -39,19 +39,22 @@ except ImportError:
 class GeminiProviderAdapter:
     """Manages real vs simulated Gemini execution outside the core scheduler."""
 
-    def __init__(self):
-        # Ensure .env is re-read if modified
-        if not os.environ.get("GEMINI_API_KEY"):
-            env_file = Path(__file__).resolve().parent.parent / ".env"
-            if env_file.exists():
-                with open(env_file, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line and not line.startswith("#") and "=" in line:
-                            k, v = line.split("=", 1)
-                            os.environ[k.strip()] = v.strip()
+    def __init__(self, api_key: Optional[str] = None):
+        if api_key is not None:
+            self.api_key = api_key
+        else:
+            # Ensure .env is re-read if modified
+            if not os.environ.get("GEMINI_API_KEY"):
+                env_file = Path(__file__).resolve().parent.parent / ".env"
+                if env_file.exists():
+                    with open(env_file, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith("#") and "=" in line:
+                                k, v = line.split("=", 1)
+                                os.environ[k.strip()] = v.strip()
 
-        self.api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+            self.api_key = os.environ.get("GEMINI_API_KEY", "").strip()
         self.model = os.environ.get("GEMINI_MODEL", "gemini-1.5-pro").strip()
         self.call_cap = int(os.environ.get("GEMINI_CALL_CAP", "100"))
         self.token_cap = int(os.environ.get("GEMINI_TOKEN_CAP", "500000"))

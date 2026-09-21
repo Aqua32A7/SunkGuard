@@ -13,3 +13,7 @@ THESIS_EVAL_SEEDS: List[int] = list(range(21, 51))
 
 # Strictly held-out seeds for Phase 2 thesis gate
 PHASE2_HELD_OUT_SEEDS: List[int] = list(range(51, 101))
+
+# Fresh held-out seeds for Phase 3 ablation evaluation
+PHASE3_FRESH_SEEDS: List[int] = list(range(151, 251))
+

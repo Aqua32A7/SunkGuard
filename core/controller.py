@@ -17,9 +17,14 @@ from core.workflow import Workflow, Step
 
 ControllerPolicy = Literal["light", "medium", "aggressive"]
 ControllerVariant = Literal[
+    "fifo",
+    "aging_only",
+    "progress_only",
     "admission_only",
     "prediction_reservation",
+    "pred_rsv_no_prog",
     "prediction_reservation_progress",
+    "pred_rsv_progress_no_aging",
     "full_sunkguard",
 ]
 
@@ -242,8 +247,8 @@ class SunkGuardController(BaseController):
 
     def plan(self, tick: int, active_workflows: List[Workflow], rm: ResourceManager) -> None:
         """Periodic reservation management cycle."""
-        # Ablation variant: admission_only performs no reservations
-        if self.variant == "admission_only":
+        # Ablation variants without reservations: admission_only, fifo, aging_only, progress_only
+        if self.variant in ("admission_only", "fifo", "aging_only", "progress_only"):
             self.reservations = []
             self._sync_resource_reservation_tallies(rm)
             return
@@ -380,21 +385,26 @@ class SunkGuardController(BaseController):
 
         # Calculate dynamic priority scores according to ablation variant
         for wf in candidates:
-            if self.variant == "prediction_reservation":
-                # Progress weighting OFF
+            if self.variant == "fifo":
+                # FIFO: no aging, no progress
+                aging_boost = 0.0
+                sunk_boost = 0.0
+            elif self.variant in ("aging_only", "prediction_reservation", "pred_rsv_no_prog"):
+                # Progress weighting OFF (beta = 0)
                 aging_boost = wf.wait_time * cfg.aging
                 sunk_boost = 0.0
-            elif self.variant == "prediction_reservation_progress":
+            elif self.variant in ("progress_only", "prediction_reservation_progress", "pred_rsv_progress_no_aging"):
                 # Wait aging OFF
                 aging_boost = 0.0
                 sunk_boost = cfg.weight * (wf.spent_work / 1000.0)
             else:  # "full_sunkguard" or "admission_only"
+                # Both wait aging and progress weighting ON
                 aging_boost = wf.wait_time * cfg.aging
                 sunk_boost = cfg.weight * (wf.spent_work / 1000.0)
             wf.score = wf.base_priority + aging_boost + sunk_boost
 
-        # Sort by score descending
-        queue = sorted(candidates, key=lambda w: w.score, reverse=True)
+        # Sort by score descending with deterministic arrival tie-breaking
+        queue = sorted(candidates, key=lambda w: (w.score, -w.born_tick, -w.id), reverse=True)
 
         for wf in queue:
             step = wf.current_step
