@@ -44,6 +44,7 @@ class SimulationConfig:
     predictor: Optional[NonOraclePredictor] = None
     resource_specs: Optional[List[ResourceSpec]] = None
     templates: Optional[List[WorkflowTemplate]] = None
+    beta_pv: float = 1.0
 
 
 @dataclass
@@ -80,6 +81,7 @@ class SimulationEngine:
                 policy=config.policy,
                 variant=config.variant,
                 predictor=config.predictor,
+                beta_pv=config.beta_pv,
             )
         else:
             self.controller = BaselineController(

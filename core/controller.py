@@ -26,6 +26,7 @@ ControllerVariant = Literal[
     "prediction_reservation_progress",
     "pred_rsv_progress_no_aging",
     "full_sunkguard",
+    "admission_pv",
 ]
 
 
@@ -183,9 +184,11 @@ class SunkGuardController(BaseController):
         policy: ControllerPolicy = "medium",
         variant: ControllerVariant = "full_sunkguard",
         predictor: Optional[NonOraclePredictor] = None,
+        beta_pv: float = 1.0,
     ):
         super().__init__(rng, policy)
         self.variant: ControllerVariant = variant
+        self.beta_pv = beta_pv
         if predictor is not None:
             self.predictor = predictor
         else:
@@ -247,8 +250,8 @@ class SunkGuardController(BaseController):
 
     def plan(self, tick: int, active_workflows: List[Workflow], rm: ResourceManager) -> None:
         """Periodic reservation management cycle."""
-        # Ablation variants without reservations: admission_only, fifo, aging_only, progress_only
-        if self.variant in ("admission_only", "fifo", "aging_only", "progress_only"):
+        # Ablation variants without reservations: admission_only, fifo, aging_only, progress_only, admission_pv
+        if self.variant in ("admission_only", "fifo", "aging_only", "progress_only", "admission_pv"):
             self.reservations = []
             self._sync_resource_reservation_tallies(rm)
             return
@@ -397,6 +400,21 @@ class SunkGuardController(BaseController):
                 # Wait aging OFF
                 aging_boost = 0.0
                 sunk_boost = cfg.weight * (wf.spent_work / 1000.0)
+            elif self.variant == "admission_pv":
+                # Protection-value ratio: priority = base + aging + beta * W_done / (eps + predicted remaining capacity units)
+                aging_boost = wf.wait_time * cfg.aging
+                w_done = wf.spent_work / 1000.0
+                pred_steps, _, _ = self.predictor.predict_remaining(
+                    template_id=wf.template_id,
+                    observed_history=wf.observed_history,
+                    current_step_idx=wf.step_index,
+                    horizon=9,
+                    elapsed_ticks=wf.age,
+                )
+                rem_units = sum(float(s.get("units", 1.0)) for s in pred_steps)
+                eps = 1.0
+                pv_boost = self.beta_pv * (w_done / (eps + rem_units))
+                sunk_boost = pv_boost
             else:  # "full_sunkguard" or "admission_only"
                 # Both wait aging and progress weighting ON
                 aging_boost = wf.wait_time * cfg.aging

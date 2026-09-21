@@ -1,0 +1,391 @@
+{
+  "status": "EXPLORATORY",
+  "selected_beta": 40.0,
+  "tuning_seeds": "1..20 (DEV_SEEDS)",
+  "evaluation_seeds": "251..300",
+  "seed_count": 50,
+  "loads": [
+    0.25,
+    0.5,
+    0.7,
+    0.85
+  ],
+  "load_results": {
+    "0.25": {
+      "Baseline (Stampede)": {
+        "wasted_token_ratio": {
+          "mean": 0.0063,
+          "ci_95": [
+            0.0026,
+            0.0101
+          ],
+          "paired_diff_vs_fifo": [
+            0.0017,
+            -0.0032,
+            0.0066
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0055,
+            0.0012,
+            0.0097
+          ]
+        },
+        "failure_rate": 0.0266,
+        "late_fail_count": 0.24,
+        "completed_runs": 32.2,
+        "wait_ticks": 0.042
+      },
+      "FIFO (Headline)": {
+        "wasted_token_ratio": {
+          "mean": 0.0046,
+          "ci_95": [
+            0.0014,
+            0.0079
+          ],
+          "paired_diff_vs_fifo": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0037,
+            0.001,
+            0.0065
+          ]
+        },
+        "failure_rate": 0.0374,
+        "late_fail_count": 0.18,
+        "completed_runs": 31.6,
+        "wait_ticks": 0.04
+      },
+      "Admission-Only (Production)": {
+        "wasted_token_ratio": {
+          "mean": 0.0009,
+          "ci_95": [
+            -0.0009,
+            0.0027
+          ],
+          "paired_diff_vs_fifo": [
+            -0.0037,
+            -0.0065,
+            -0.001
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "failure_rate": 0.0283,
+        "late_fail_count": 0.04,
+        "completed_runs": 31.9,
+        "wait_ticks": 0.047
+      },
+      "Admission-PV (Exploratory beta=40.0)": {
+        "wasted_token_ratio": {
+          "mean": 0.0009,
+          "ci_95": [
+            -0.0009,
+            0.0027
+          ],
+          "paired_diff_vs_fifo": [
+            -0.0037,
+            -0.0065,
+            -0.001
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "failure_rate": 0.0314,
+        "late_fail_count": 0.04,
+        "completed_runs": 31.8,
+        "wait_ticks": 0.048
+      }
+    },
+    "0.5": {
+      "Baseline (Stampede)": {
+        "wasted_token_ratio": {
+          "mean": 0.0228,
+          "ci_95": [
+            0.0164,
+            0.0293
+          ],
+          "paired_diff_vs_fifo": [
+            0.0034,
+            -0.0051,
+            0.0119
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0194,
+            0.0133,
+            0.0256
+          ]
+        },
+        "failure_rate": 0.1589,
+        "late_fail_count": 1.34,
+        "completed_runs": 57.1,
+        "wait_ticks": 0.105
+      },
+      "FIFO (Headline)": {
+        "wasted_token_ratio": {
+          "mean": 0.0194,
+          "ci_95": [
+            0.0147,
+            0.0242
+          ],
+          "paired_diff_vs_fifo": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "paired_diff_vs_admission_only": [
+            0.016,
+            0.011,
+            0.021
+          ]
+        },
+        "failure_rate": 0.1598,
+        "late_fail_count": 1.16,
+        "completed_runs": 57.72,
+        "wait_ticks": 0.143
+      },
+      "Admission-Only (Production)": {
+        "wasted_token_ratio": {
+          "mean": 0.0034,
+          "ci_95": [
+            0.0017,
+            0.0052
+          ],
+          "paired_diff_vs_fifo": [
+            -0.016,
+            -0.021,
+            -0.011
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "failure_rate": 0.1484,
+        "late_fail_count": 0.28,
+        "completed_runs": 58.44,
+        "wait_ticks": 0.167
+      },
+      "Admission-PV (Exploratory beta=40.0)": {
+        "wasted_token_ratio": {
+          "mean": 0.0043,
+          "ci_95": [
+            0.002,
+            0.0066
+          ],
+          "paired_diff_vs_fifo": [
+            -0.0151,
+            -0.0201,
+            -0.0102
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0009,
+            -0.0009,
+            0.0026
+          ]
+        },
+        "failure_rate": 0.165,
+        "late_fail_count": 0.34,
+        "completed_runs": 57.5,
+        "wait_ticks": 0.171
+      }
+    },
+    "0.7": {
+      "Baseline (Stampede)": {
+        "wasted_token_ratio": {
+          "mean": 0.0582,
+          "ci_95": [
+            0.0492,
+            0.0673
+          ],
+          "paired_diff_vs_fifo": [
+            0.0238,
+            0.0132,
+            0.0345
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0531,
+            0.0435,
+            0.0626
+          ]
+        },
+        "failure_rate": 0.2648,
+        "late_fail_count": 4.08,
+        "completed_runs": 70.12,
+        "wait_ticks": 0.227
+      },
+      "FIFO (Headline)": {
+        "wasted_token_ratio": {
+          "mean": 0.0344,
+          "ci_95": [
+            0.0295,
+            0.0393
+          ],
+          "paired_diff_vs_fifo": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0292,
+            0.0245,
+            0.0339
+          ]
+        },
+        "failure_rate": 0.2672,
+        "late_fail_count": 2.32,
+        "completed_runs": 69.9,
+        "wait_ticks": 0.272
+      },
+      "Admission-Only (Production)": {
+        "wasted_token_ratio": {
+          "mean": 0.0052,
+          "ci_95": [
+            0.0031,
+            0.0073
+          ],
+          "paired_diff_vs_fifo": [
+            -0.0292,
+            -0.0339,
+            -0.0245
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "failure_rate": 0.2438,
+        "late_fail_count": 0.48,
+        "completed_runs": 71.92,
+        "wait_ticks": 0.328
+      },
+      "Admission-PV (Exploratory beta=40.0)": {
+        "wasted_token_ratio": {
+          "mean": 0.0043,
+          "ci_95": [
+            0.0023,
+            0.0064
+          ],
+          "paired_diff_vs_fifo": [
+            -0.0301,
+            -0.0352,
+            -0.025
+          ],
+          "paired_diff_vs_admission_only": [
+            -0.0009,
+            -0.0036,
+            0.0019
+          ]
+        },
+        "failure_rate": 0.2631,
+        "late_fail_count": 0.4,
+        "completed_runs": 70.4,
+        "wait_ticks": 0.348
+      }
+    },
+    "0.85": {
+      "Baseline (Stampede)": {
+        "wasted_token_ratio": {
+          "mean": 0.0718,
+          "ci_95": [
+            0.0629,
+            0.0807
+          ],
+          "paired_diff_vs_fifo": [
+            0.0266,
+            0.0152,
+            0.0379
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0656,
+            0.0563,
+            0.0749
+          ]
+        },
+        "failure_rate": 0.317,
+        "late_fail_count": 5.52,
+        "completed_runs": 78.34,
+        "wait_ticks": 0.369
+      },
+      "FIFO (Headline)": {
+        "wasted_token_ratio": {
+          "mean": 0.0452,
+          "ci_95": [
+            0.0385,
+            0.0518
+          ],
+          "paired_diff_vs_fifo": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "paired_diff_vs_admission_only": [
+            0.039,
+            0.0327,
+            0.0454
+          ]
+        },
+        "failure_rate": 0.3305,
+        "late_fail_count": 3.48,
+        "completed_runs": 77.68,
+        "wait_ticks": 0.398
+      },
+      "Admission-Only (Production)": {
+        "wasted_token_ratio": {
+          "mean": 0.0062,
+          "ci_95": [
+            0.0036,
+            0.0088
+          ],
+          "paired_diff_vs_fifo": [
+            -0.039,
+            -0.0454,
+            -0.0327
+          ],
+          "paired_diff_vs_admission_only": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "failure_rate": 0.3081,
+        "late_fail_count": 0.6,
+        "completed_runs": 80.0,
+        "wait_ticks": 0.498
+      },
+      "Admission-PV (Exploratory beta=40.0)": {
+        "wasted_token_ratio": {
+          "mean": 0.0051,
+          "ci_95": [
+            0.0027,
+            0.0075
+          ],
+          "paired_diff_vs_fifo": [
+            -0.0401,
+            -0.0474,
+            -0.0328
+          ],
+          "paired_diff_vs_admission_only": [
+            -0.0011,
+            -0.0043,
+            0.0021
+          ]
+        },
+        "failure_rate": 0.323,
+        "late_fail_count": 0.5,
+        "completed_runs": 78.84,
+        "wait_ticks": 0.536
+      }
+    }
+  }
+}
