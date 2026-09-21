@@ -10,3 +10,8 @@ __pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Frontend build & dependencies
+node_modules/
+dist/
+
