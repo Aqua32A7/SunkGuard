@@ -22,5 +22,8 @@ compare:
 thesis-eval:
 	$(PYTHON) cli.py thesis-eval --start-seed 21 --end-seed 50
 
+gate2-eval:
+	$(PYTHON) scripts/eval_gate2.py
+
 verify:
 	$(PYTHON) cli.py verify-reproducibility --seed 42

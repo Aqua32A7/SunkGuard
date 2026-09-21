@@ -10,11 +10,18 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Optional, Set, Tuple
 
+from core.predictor import NonOraclePredictor
 from core.resources import ResourceManager, ReservationKind
 from core.rng import SeededRNG
 from core.workflow import Workflow, Step
 
 ControllerPolicy = Literal["light", "medium", "aggressive"]
+ControllerVariant = Literal[
+    "admission_only",
+    "prediction_reservation",
+    "prediction_reservation_progress",
+    "full_sunkguard",
+]
 
 
 @dataclass(frozen=True)
@@ -165,8 +172,20 @@ class SunkGuardController(BaseController):
     confidence-gated hard/soft reservations, aging queue, and divergence handling.
     """
 
-    def __init__(self, rng: SeededRNG, policy: ControllerPolicy = "medium"):
+    def __init__(
+        self,
+        rng: SeededRNG,
+        policy: ControllerPolicy = "medium",
+        variant: ControllerVariant = "full_sunkguard",
+        predictor: Optional[NonOraclePredictor] = None,
+    ):
         super().__init__(rng, policy)
+        self.variant: ControllerVariant = variant
+        if predictor is not None:
+            self.predictor = predictor
+        else:
+            from core.predictor import train_predictor_on_dev_seeds
+            self.predictor = train_predictor_on_dev_seeds()
         self.reservations: List[Reservation] = []
 
     def _sync_resource_reservation_tallies(self, rm: ResourceManager) -> None:
@@ -186,29 +205,33 @@ class SunkGuardController(BaseController):
         workflow: Workflow,
         rm: ResourceManager,
         horizon: Optional[int] = None,
+        confidence_override: Optional[float] = None,
     ) -> Tuple[float, float, float]:
-        """Calculates DeltaP_failure, S_no_rsv, and S_rsv according to SPEC.md Section 4.
-
-        Returns (delta_p_failure, s_no_rsv, s_rsv).
-        """
+        """Calculates DeltaP_failure, S_no_rsv, and S_rsv using non-oracle prediction."""
         h = horizon or self.policy_config.horizon
-        rem_steps = workflow.remaining_predicted_steps(h)
-        if not rem_steps:
+        pred_steps, pred_conf, _ = self.predictor.predict_remaining(
+            template_id=workflow.template_id,
+            observed_history=workflow.observed_history,
+            current_step_idx=workflow.step_index,
+            horizon=h,
+            elapsed_ticks=workflow.age,
+        )
+        if not pred_steps:
             return 0.0, 1.0, 1.0
 
-        c_w = workflow.predictor_confidence
+        c_w = confidence_override if confidence_override is not None else (
+            workflow.predictor_confidence if confidence_override is None and pred_conf == 0.0 else pred_conf
+        )
+
         pat = self.policy_config.pat
         s_no_rsv = 1.0
         s_rsv = 1.0
 
-        for s in rem_steps:
-            r = rm.get(s.resource_id)
-            # Instantaneous load: used + queue / capacity
+        for s in pred_steps:
+            r = rm.get(s["resource_id"])
             rho = (r.in_use + r.hard_reserved) / max(1, r.cap)
-            # Hazard rate without reservation (bounded in [0.0, 1.0])
             buffer = 0.15
-            hazard = min(1.0, max(0.0, (rho - 1.0 + buffer) / (pat / max(1, s.duration))))
-            # Hazard with reservation
+            hazard = min(1.0, max(0.0, (rho - 1.0 + buffer) / (pat / max(1, s["duration"]))))
             hazard_rsv = (1.0 - c_w) * hazard
 
             s_no_rsv *= (1.0 - hazard)
@@ -218,12 +241,13 @@ class SunkGuardController(BaseController):
         return delta_p, s_no_rsv, s_rsv
 
     def plan(self, tick: int, active_workflows: List[Workflow], rm: ResourceManager) -> None:
-        """Periodic reservation management cycle:
+        """Periodic reservation management cycle."""
+        # Ablation variant: admission_only performs no reservations
+        if self.variant == "admission_only":
+            self.reservations = []
+            self._sync_resource_reservation_tallies(rm)
+            return
 
-        1. Decrement TTLs and expire aged reservations.
-        2. Evaluate eligible workflows (work_done / total >= threshold).
-        3. Allocate hard/soft reservations gated by confidence and capacity bounds.
-        """
         cfg = self.policy_config
         wf_by_id = {w.id: w for w in active_workflows}
 
@@ -233,7 +257,7 @@ class SunkGuardController(BaseController):
             rsv.ttl -= 1
             wf = wf_by_id.get(rsv.workflow_id)
             if not wf:
-                continue  # Workflow is gone
+                continue
             if rsv.ttl <= 0:
                 res = rm.get(rsv.resource_id)
                 self.add_log(
@@ -247,19 +271,29 @@ class SunkGuardController(BaseController):
         self.reservations = retained_reservations
         self._sync_resource_reservation_tallies(rm)
 
-        # 2. Identify candidate workflows
-        candidates: List[Workflow] = []
+        # 2. Evaluate candidates using non-oracle predictions
+        candidates: List[Tuple[Workflow, List[Dict[str, Any]], float, float]] = []
         for w in active_workflows:
-            if w.is_terminal:
+            if w.is_terminal or tick < w.no_reservation_until:
                 continue
-            if w.work_fraction_done >= cfg.threshold and tick >= w.no_reservation_until:
-                if w.remaining_predicted_steps(cfg.horizon):
-                    candidates.append(w)
+
+            pred_steps, conf, est_tot_work = self.predictor.predict_remaining(
+                template_id=w.template_id,
+                observed_history=w.observed_history,
+                current_step_idx=w.step_index,
+                horizon=cfg.horizon,
+                elapsed_ticks=w.age,
+            )
+            est_frac = (w.spent_work / est_tot_work) if est_tot_work > 0 else 0.0
+
+            if est_frac >= cfg.threshold and pred_steps:
+                w.predictor_confidence = conf
+                candidates.append((w, pred_steps, conf, est_frac))
 
         # Sort candidates by sunk value at risk density
-        def value_key(wf: Workflow) -> float:
-            rem = wf.remaining_predicted_steps(cfg.horizon)
-            units = sum(s.units for s in rem) or 1
+        def value_key(item: Tuple[Workflow, List[Dict[str, Any]], float, float]) -> float:
+            wf, steps, _, _ = item
+            units = sum(s["units"] for s in steps) or 1
             return wf.spent_work / units
 
         candidates.sort(key=value_key, reverse=True)
@@ -267,19 +301,11 @@ class SunkGuardController(BaseController):
         # 3. Formulate reservation requests
         wanted_keys: Set[str] = set()
 
-        for w in candidates:
-            # Update predictor confidence
-            mismatch_penalty = 0.25 if (w.has_diverged and tick - w.mismatch_tick < 6) else 0.0
-            base_conf = 0.58 + 0.13 * w.step_index + w.noise - mismatch_penalty
-            w.predictor_confidence = max(0.30, min(0.97, base_conf))
-
-            rem_steps = w.remaining_predicted_steps(cfg.horizon)
-            # Max required units per resource across lookahead horizon
+        for w, pred_steps, conf, _ in candidates:
             per_resource_units: Dict[str, int] = {}
-            for s in rem_steps:
-                per_resource_units[s.resource_id] = max(
-                    per_resource_units.get(s.resource_id, 0), s.units
-                )
+            for s in pred_steps:
+                rid = s["resource_id"]
+                per_resource_units[rid] = max(per_resource_units.get(rid, 0), s["units"])
 
             for rid, units in per_resource_units.items():
                 key = f"{w.id}:{rid}"
@@ -287,13 +313,19 @@ class SunkGuardController(BaseController):
 
                 # Determine reservation tier
                 kind: Optional[ReservationKind] = None
-                if w.predictor_confidence >= 0.80:
+                if conf >= 0.80:
                     kind = "hard"
-                elif w.predictor_confidence >= 0.50:
+                elif conf >= 0.50:
                     kind = "soft"
 
                 if not kind:
                     continue
+
+                # Contention Gating: If resource contention is low (rho <= 0.40),
+                # keep reservation as soft to prevent self-inflicted lockouts on idle resources.
+                rho_res = (res.in_use + res.hard_reserved) / max(1, res.cap)
+                if kind == "hard" and rho_res <= 0.40:
+                    kind = "soft"
 
                 # Enforce hard reservation capacity cap (default 80%)
                 if kind == "hard":
@@ -303,7 +335,6 @@ class SunkGuardController(BaseController):
                     )
                     cap_limit = int(res.cap * cfg.hard_cap)
                     if other_hard + units > cap_limit:
-                        # Downgrade to soft reservation to avoid locking all capacity
                         kind = "soft"
 
                 wanted_keys.add(key)
@@ -311,7 +342,7 @@ class SunkGuardController(BaseController):
                 if existing:
                     existing.units = units
                     existing.kind = kind
-                    existing.confidence = w.predictor_confidence
+                    existing.confidence = conf
                 else:
                     new_rsv = Reservation(
                         key=key,
@@ -320,7 +351,7 @@ class SunkGuardController(BaseController):
                         units=units,
                         kind=kind,
                         ttl=cfg.ttl,
-                        confidence=w.predictor_confidence,
+                        confidence=conf,
                     )
                     self.reservations.append(new_rsv)
                     if not w.reservation_logged:
@@ -328,7 +359,7 @@ class SunkGuardController(BaseController):
                         h_desc = "remaining chain" if cfg.horizon >= 9 else f"next {cfg.horizon} step(s)"
                         self.add_log(
                             tick,
-                            f"Protecting {w.name}: reserved {h_desc} ({kind}, {int(w.predictor_confidence * 100)}% conf)",
+                            f"Protecting {w.name}: reserved {h_desc} ({kind}, {int(conf * 100)}% conf)",
                             "rsv",
                         )
 
@@ -347,10 +378,19 @@ class SunkGuardController(BaseController):
         """Aging priority queue scheduling."""
         cfg = self.policy_config
 
-        # Calculate dynamic priority scores with aging
+        # Calculate dynamic priority scores according to ablation variant
         for wf in candidates:
-            aging_boost = wf.wait_time * cfg.aging
-            sunk_boost = cfg.weight * (wf.spent_work / 1000.0)
+            if self.variant == "prediction_reservation":
+                # Progress weighting OFF
+                aging_boost = wf.wait_time * cfg.aging
+                sunk_boost = 0.0
+            elif self.variant == "prediction_reservation_progress":
+                # Wait aging OFF
+                aging_boost = 0.0
+                sunk_boost = cfg.weight * (wf.spent_work / 1000.0)
+            else:  # "full_sunkguard" or "admission_only"
+                aging_boost = wf.wait_time * cfg.aging
+                sunk_boost = cfg.weight * (wf.spent_work / 1000.0)
             wf.score = wf.base_priority + aging_boost + sunk_boost
 
         # Sort by score descending

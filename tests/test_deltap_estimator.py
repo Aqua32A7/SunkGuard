@@ -58,18 +58,23 @@ class TestDeltaPFailureEstimator(unittest.TestCase):
         self.rm.get("search").in_use = 4
         self.rm.get("pro").in_use = 7
 
-        wf_low = self._create_workflow(confidence=0.50)
-        wf_high = self._create_workflow(confidence=0.95)
+        wf = self._create_workflow()
 
-        delta_p_low, _, _ = self.controller.estimate_delta_p_failure(wf_low, self.rm, horizon=2)
-        delta_p_high, _, _ = self.controller.estimate_delta_p_failure(wf_high, self.rm, horizon=2)
+        delta_p_low, _, _ = self.controller.estimate_delta_p_failure(
+            wf, self.rm, horizon=2, confidence_override=0.50
+        )
+        delta_p_high, _, _ = self.controller.estimate_delta_p_failure(
+            wf, self.rm, horizon=2, confidence_override=0.95
+        )
 
         self.assertGreater(delta_p_high, delta_p_low)
 
     def test_zero_confidence_yields_zero_delta_p(self):
         self.rm.get("search").in_use = 4
-        wf_zero = self._create_workflow(confidence=0.0)
-        delta_p, s_no_rsv, s_rsv = self.controller.estimate_delta_p_failure(wf_zero, self.rm, horizon=2)
+        wf_zero = self._create_workflow()
+        delta_p, s_no_rsv, s_rsv = self.controller.estimate_delta_p_failure(
+            wf_zero, self.rm, horizon=2, confidence_override=0.0
+        )
         self.assertAlmostEqual(delta_p, 0.0, places=4)
         self.assertAlmostEqual(s_rsv, s_no_rsv, places=4)
 

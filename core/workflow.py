@@ -138,6 +138,8 @@ class Workflow:
     started_tick: int = -1
     end_tick: int = -1
 
+    observed_history: List[Dict[str, Any]] = field(default_factory=list)
+
     no_reservation_until: int = 0
     reservation_logged: bool = False
     demo_tag: str = ""

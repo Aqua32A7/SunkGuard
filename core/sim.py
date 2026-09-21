@@ -16,8 +16,10 @@ from core.controller import (
     BaselineController,
     ControllerLogEntry,
     ControllerPolicy,
+    ControllerVariant,
     SunkGuardController,
 )
+from core.predictor import NonOraclePredictor
 from core.resources import DEFAULT_RESOURCE_SPECS, ResourceManager, ResourceSpec
 from core.rng import SeededRNG
 from core.workflow import (
@@ -37,7 +39,9 @@ class SimulationConfig:
     total_ticks: int = 200
     load_factor: float = 0.50
     policy: ControllerPolicy = "medium"
+    variant: ControllerVariant = "full_sunkguard"
     is_sunkguard: bool = True
+    predictor: Optional[NonOraclePredictor] = None
     resource_specs: Optional[List[ResourceSpec]] = None
     templates: Optional[List[WorkflowTemplate]] = None
 
@@ -72,7 +76,10 @@ class SimulationEngine:
         # Initialize controller
         if config.is_sunkguard:
             self.controller: BaseController = SunkGuardController(
-                rng=self.rng, policy=config.policy
+                rng=self.rng,
+                policy=config.policy,
+                variant=config.variant,
+                predictor=config.predictor,
             )
         else:
             self.controller = BaselineController(
@@ -258,6 +265,13 @@ class SimulationEngine:
             st = wf_a.steps[i]
             wf_a.spent_tokens += st.tokens
             wf_a.spent_work += st.work
+            wf_a.observed_history.append({
+                "resource_id": st.resource_id,
+                "units": st.units,
+                "duration": st.duration,
+                "work": st.work,
+                "tokens": st.tokens,
+            })
             self.total_tokens_consumed += st.tokens
             self.total_work_executed += st.work
             if st.resource_id in self.tokens_by_resource:
@@ -314,6 +328,13 @@ class SimulationEngine:
 
                     wf.spent_tokens += step.tokens
                     wf.spent_work += step.work
+                    wf.observed_history.append({
+                        "resource_id": step.resource_id,
+                        "units": step.units,
+                        "duration": step.duration,
+                        "work": step.work,
+                        "tokens": step.tokens,
+                    })
                     tokens_this_tick += step.tokens
                     self.total_tokens_consumed += step.tokens
                     self.total_work_executed += step.work
