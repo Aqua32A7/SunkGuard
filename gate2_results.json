@@ -1,0 +1,423 @@
+{
+  "gate": "thesis-gate2-frozen",
+  "commit_hash": "c472a32062c409e1c661697a69a1188408c09a51",
+  "config_hash": "2bc49ab6240e4f398bb9cf6e0d447063a41a77dd3042379d78505d1f5a11e9b5",
+  "seed_count": 50,
+  "seed_list": [
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100
+  ],
+  "timestamp_utc": "2026-09-21T15:07:39.508365+00:00",
+  "evaluation": {
+    "loads_evaluated": [
+      {
+        "load": 0.25,
+        "variants": {
+          "Baseline": {
+            "wasted_token_ratio": 0.004515587943387555,
+            "overall_failure_rate": 0.03510574690098361,
+            "completed_runs": 33.18,
+            "late_failures": 0.18,
+            "mean_wait_ticks": 0.04392986723539694,
+            "p95_wait_ticks": 0.0,
+            "wasted_token_reduction": 0.0,
+            "added_wait_ticks": 0.0,
+            "wait_ratio_of_means": 1.0
+          },
+          "Admission-Only": {
+            "wasted_token_ratio": 0.0018373114007539549,
+            "overall_failure_rate": 0.029540826326026278,
+            "completed_runs": 33.6,
+            "late_failures": 0.08,
+            "mean_wait_ticks": 0.06456392608998875,
+            "p95_wait_ticks": 0.0,
+            "wasted_token_reduction": 0.5931180116989108,
+            "added_wait_ticks": 0.020634058854591804,
+            "wait_ratio_of_means": 1.4697045575854983
+          },
+          "Pred-Rsv (Progress OFF)": {
+            "wasted_token_ratio": 0.003327268846815231,
+            "overall_failure_rate": 0.035634213946220517,
+            "completed_runs": 33.32,
+            "late_failures": 0.14,
+            "mean_wait_ticks": 0.052247615642722324,
+            "p95_wait_ticks": 0.0,
+            "wasted_token_reduction": 0.26315932974186684,
+            "added_wait_ticks": 0.008317748407325382,
+            "wait_ratio_of_means": 1.189341533011128
+          },
+          "Pred-Rsv + Progress (No Aging)": {
+            "wasted_token_ratio": 0.0035407061845692395,
+            "overall_failure_rate": 0.04730405794087007,
+            "completed_runs": 32.88,
+            "late_failures": 0.14,
+            "mean_wait_ticks": 0.06797856023633021,
+            "p95_wait_ticks": 0.0,
+            "wasted_token_reduction": 0.2158925417997657,
+            "added_wait_ticks": 0.02404869300093327,
+            "wait_ratio_of_means": 1.5474337737482573
+          },
+          "Full SunkGuard (+Aging)": {
+            "wasted_token_ratio": 0.0029985807750336413,
+            "overall_failure_rate": 0.04148034070870267,
+            "completed_runs": 33.04,
+            "late_failures": 0.12,
+            "mean_wait_ticks": 0.06797856023633021,
+            "p95_wait_ticks": 0.0,
+            "wasted_token_reduction": 0.33594898103476384,
+            "added_wait_ticks": 0.02404869300093327,
+            "wait_ratio_of_means": 1.5474337737482573
+          }
+        }
+      },
+      {
+        "load": 0.4,
+        "variants": {
+          "Baseline": {
+            "wasted_token_ratio": 0.015412161042646769,
+            "overall_failure_rate": 0.10290728431898502,
+            "completed_runs": 48.44,
+            "late_failures": 0.88,
+            "mean_wait_ticks": 0.06741156880122606,
+            "p95_wait_ticks": 0.0,
+            "wasted_token_reduction": 0.0,
+            "added_wait_ticks": 0.0,
+            "wait_ratio_of_means": 1.0
+          },
+          "Admission-Only": {
+            "wasted_token_ratio": 0.003916337266255404,
+            "overall_failure_rate": 0.08371882408637289,
+            "completed_runs": 49.42,
+            "late_failures": 0.26,
+            "mean_wait_ticks": 0.11309808921586396,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.7458930480016032,
+            "added_wait_ticks": 0.0456865204146379,
+            "wait_ratio_of_means": 1.6777252217546221
+          },
+          "Pred-Rsv (Progress OFF)": {
+            "wasted_token_ratio": 0.00416038921025004,
+            "overall_failure_rate": 0.1025444150051636,
+            "completed_runs": 48.18,
+            "late_failures": 0.28,
+            "mean_wait_ticks": 0.09888305702483499,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.7300580237425571,
+            "added_wait_ticks": 0.03147148822360893,
+            "wait_ratio_of_means": 1.4668558940737266
+          },
+          "Pred-Rsv + Progress (No Aging)": {
+            "wasted_token_ratio": 0.0034534029648098457,
+            "overall_failure_rate": 0.11514987903748601,
+            "completed_runs": 47.78,
+            "late_failures": 0.22,
+            "mean_wait_ticks": 0.13142746436548017,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.775929997405686,
+            "added_wait_ticks": 0.0640158955642541,
+            "wait_ratio_of_means": 1.9496277375329352
+          },
+          "Full SunkGuard (+Aging)": {
+            "wasted_token_ratio": 0.003451471063832021,
+            "overall_failure_rate": 0.10559236633354795,
+            "completed_runs": 48.2,
+            "late_failures": 0.22,
+            "mean_wait_ticks": 0.124989520842805,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.7760553465356672,
+            "added_wait_ticks": 0.057577952041578936,
+            "wait_ratio_of_means": 1.8541256799905794
+          }
+        }
+      },
+      {
+        "load": 0.5,
+        "variants": {
+          "Baseline": {
+            "wasted_token_ratio": 0.0272825573550012,
+            "overall_failure_rate": 0.15026567663751764,
+            "completed_runs": 57.6,
+            "late_failures": 1.76,
+            "mean_wait_ticks": 0.12599681130122342,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.0,
+            "added_wait_ticks": 0.0,
+            "wait_ratio_of_means": 1.0
+          },
+          "Admission-Only": {
+            "wasted_token_ratio": 0.005223719074592994,
+            "overall_failure_rate": 0.13972864512676003,
+            "completed_runs": 59.3,
+            "late_failures": 0.42,
+            "mean_wait_ticks": 0.15976174696213297,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.8085326457259174,
+            "added_wait_ticks": 0.033764935660909545,
+            "wait_ratio_of_means": 1.2679824617163282
+          },
+          "Pred-Rsv (Progress OFF)": {
+            "wasted_token_ratio": 0.006109989529928396,
+            "overall_failure_rate": 0.16938585441005538,
+            "completed_runs": 57.3,
+            "late_failures": 0.48,
+            "mean_wait_ticks": 0.17976811068452364,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.7760477710932635,
+            "added_wait_ticks": 0.05377129938330022,
+            "wait_ratio_of_means": 1.4267671445648569
+          },
+          "Pred-Rsv + Progress (No Aging)": {
+            "wasted_token_ratio": 0.005961294012376557,
+            "overall_failure_rate": 0.1831587958842052,
+            "completed_runs": 56.6,
+            "late_failures": 0.46,
+            "mean_wait_ticks": 0.22625779190228573,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.7814979756183382,
+            "added_wait_ticks": 0.10026098060106231,
+            "wait_ratio_of_means": 1.795742206216363
+          },
+          "Full SunkGuard (+Aging)": {
+            "wasted_token_ratio": 0.006369157831760837,
+            "overall_failure_rate": 0.17263325407734212,
+            "completed_runs": 57.1,
+            "late_failures": 0.48,
+            "mean_wait_ticks": 0.20809148834843647,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.7665483572934448,
+            "added_wait_ticks": 0.08209467704721304,
+            "wait_ratio_of_means": 1.6515615450850374
+          }
+        }
+      },
+      {
+        "load": 0.55,
+        "variants": {
+          "Baseline": {
+            "wasted_token_ratio": 0.031481131150002895,
+            "overall_failure_rate": 0.1709737412718714,
+            "completed_runs": 61.42,
+            "late_failures": 2.14,
+            "mean_wait_ticks": 0.1406361275518995,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.0,
+            "added_wait_ticks": 0.0,
+            "wait_ratio_of_means": 1.0
+          },
+          "Admission-Only": {
+            "wasted_token_ratio": 0.0030672263939212855,
+            "overall_failure_rate": 0.16227927399684158,
+            "completed_runs": 63.76,
+            "late_failures": 0.26,
+            "mean_wait_ticks": 0.19567814157450922,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.9025693714972818,
+            "added_wait_ticks": 0.05504201402260972,
+            "wait_ratio_of_means": 1.3913789079715477
+          },
+          "Pred-Rsv (Progress OFF)": {
+            "wasted_token_ratio": 0.00547598248528113,
+            "overall_failure_rate": 0.19564376605925193,
+            "completed_runs": 61.0,
+            "late_failures": 0.5,
+            "mean_wait_ticks": 0.26296832247400326,
+            "p95_wait_ticks": 2.0,
+            "wasted_token_reduction": 0.826055091248504,
+            "added_wait_ticks": 0.12233219492210376,
+            "wait_ratio_of_means": 1.869849000051278
+          },
+          "Pred-Rsv + Progress (No Aging)": {
+            "wasted_token_ratio": 0.0033174522052166937,
+            "overall_failure_rate": 0.20690132486506382,
+            "completed_runs": 60.48,
+            "late_failures": 0.26,
+            "mean_wait_ticks": 0.3184981171205607,
+            "p95_wait_ticks": 2.0,
+            "wasted_token_reduction": 0.8946209337456927,
+            "added_wait_ticks": 0.1778619895686612,
+            "wait_ratio_of_means": 2.264696295786615
+          },
+          "Full SunkGuard (+Aging)": {
+            "wasted_token_ratio": 0.0028851289325735685,
+            "overall_failure_rate": 0.19738792215251522,
+            "completed_runs": 61.12,
+            "late_failures": 0.28,
+            "mean_wait_ticks": 0.30638699070068676,
+            "p95_wait_ticks": 2.0,
+            "wasted_token_reduction": 0.9083537081680337,
+            "added_wait_ticks": 0.16575086314878726,
+            "wait_ratio_of_means": 2.1785795444888056
+          }
+        }
+      },
+      {
+        "load": 0.7,
+        "variants": {
+          "Baseline": {
+            "wasted_token_ratio": 0.06433522633841526,
+            "overall_failure_rate": 0.27342576335344293,
+            "completed_runs": 69.06,
+            "late_failures": 4.46,
+            "mean_wait_ticks": 0.20549823670575904,
+            "p95_wait_ticks": 1.0,
+            "wasted_token_reduction": 0.0,
+            "added_wait_ticks": 0.0,
+            "wait_ratio_of_means": 1.0
+          },
+          "Admission-Only": {
+            "wasted_token_ratio": 0.0077542868121537704,
+            "overall_failure_rate": 0.2355867197894975,
+            "completed_runs": 73.52,
+            "late_failures": 0.72,
+            "mean_wait_ticks": 0.31487747742205885,
+            "p95_wait_ticks": 2.0,
+            "wasted_token_reduction": 0.8794705909424367,
+            "added_wait_ticks": 0.10937924071629981,
+            "wait_ratio_of_means": 1.5322636460035108
+          },
+          "Pred-Rsv (Progress OFF)": {
+            "wasted_token_ratio": 0.011974737118276606,
+            "overall_failure_rate": 0.2696493581241737,
+            "completed_runs": 69.76,
+            "late_failures": 1.5,
+            "mean_wait_ticks": 0.43127332613734964,
+            "p95_wait_ticks": 3.0,
+            "wasted_token_reduction": 0.813869666746997,
+            "added_wait_ticks": 0.2257750894315906,
+            "wait_ratio_of_means": 2.098671662837014
+          },
+          "Pred-Rsv + Progress (No Aging)": {
+            "wasted_token_ratio": 0.007229192978889234,
+            "overall_failure_rate": 0.2756082461937148,
+            "completed_runs": 69.76,
+            "late_failures": 0.64,
+            "mean_wait_ticks": 0.5052999480005187,
+            "p95_wait_ticks": 3.0,
+            "wasted_token_reduction": 0.8876324310905143,
+            "added_wait_ticks": 0.29980171129475963,
+            "wait_ratio_of_means": 2.458901624173196
+          },
+          "Full SunkGuard (+Aging)": {
+            "wasted_token_ratio": 0.007354047252022065,
+            "overall_failure_rate": 0.26987109100410583,
+            "completed_runs": 70.06,
+            "late_failures": 0.7,
+            "mean_wait_ticks": 0.5003171439371188,
+            "p95_wait_ticks": 3.0,
+            "wasted_token_reduction": 0.885691748198127,
+            "added_wait_ticks": 0.29481890723135973,
+            "wait_ratio_of_means": 2.434654194398241
+          }
+        }
+      },
+      {
+        "load": 0.85,
+        "variants": {
+          "Baseline": {
+            "wasted_token_ratio": 0.07269299904343637,
+            "overall_failure_rate": 0.3200492837006135,
+            "completed_runs": 78.46,
+            "late_failures": 5.66,
+            "mean_wait_ticks": 0.36395110378632745,
+            "p95_wait_ticks": 2.0,
+            "wasted_token_reduction": 0.0,
+            "added_wait_ticks": 0.0,
+            "wait_ratio_of_means": 1.0
+          },
+          "Admission-Only": {
+            "wasted_token_ratio": 0.0071380325017333605,
+            "overall_failure_rate": 0.29968129728776594,
+            "completed_runs": 81.2,
+            "late_failures": 0.68,
+            "mean_wait_ticks": 0.5412255107593253,
+            "p95_wait_ticks": 4.0,
+            "wasted_token_reduction": 0.9018057777824221,
+            "added_wait_ticks": 0.1772744069729979,
+            "wait_ratio_of_means": 1.487083031563147
+          },
+          "Pred-Rsv (Progress OFF)": {
+            "wasted_token_ratio": 0.019002688884863297,
+            "overall_failure_rate": 0.35239379072240934,
+            "completed_runs": 74.42,
+            "late_failures": 3.68,
+            "mean_wait_ticks": 0.8452927459517318,
+            "p95_wait_ticks": 6.0,
+            "wasted_token_reduction": 0.7385898348545423,
+            "added_wait_ticks": 0.4813416421654043,
+            "wait_ratio_of_means": 2.3225448065902716
+          },
+          "Pred-Rsv + Progress (No Aging)": {
+            "wasted_token_ratio": 0.0071925229193379615,
+            "overall_failure_rate": 0.3355197127789402,
+            "completed_runs": 76.36,
+            "late_failures": 0.76,
+            "mean_wait_ticks": 0.8824710205773215,
+            "p95_wait_ticks": 6.0,
+            "wasted_token_reduction": 0.9010561812831495,
+            "added_wait_ticks": 0.5185199167909941,
+            "wait_ratio_of_means": 2.424696645776386
+          },
+          "Full SunkGuard (+Aging)": {
+            "wasted_token_ratio": 0.010052913528882766,
+            "overall_failure_rate": 0.34175173537108994,
+            "completed_runs": 75.7,
+            "late_failures": 1.92,
+            "mean_wait_ticks": 0.9649816460134821,
+            "p95_wait_ticks": 7.0,
+            "wasted_token_reduction": 0.8617072667083685,
+            "added_wait_ticks": 0.6010305422271547,
+            "wait_ratio_of_means": 2.6514046419268853
+          }
+        }
+      }
+    ]
+  }
+}
