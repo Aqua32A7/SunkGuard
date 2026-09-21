@@ -1,0 +1,59 @@
+{
+  "workflow_id": "wf-007",
+  "scenario_name": "Market Intelligence Brief",
+  "agent_type": "Research agent",
+  "template_id": "research",
+  "total_latency_seconds": 11.2627,
+  "final_progress_pct": 75,
+  "final_status": "RUNNING",
+  "tokens_spent": "701",
+  "work_at_risk": 0.75,
+  "protection_value": 0.01,
+  "steps": [
+    {
+      "step_index": 1,
+      "step_name": "Deconstruct Inquiry",
+      "resource_id": "pro",
+      "units": 2,
+      "prompt": "You are a lead market research planner. Deconstruct the inquiry 'Generative AI infrastructure market dynamics 2026' into 3 core architectural sub-questions. Keep response under 100 words.",
+      "response_text": ":**\n    *   *",
+      "prompt_tokens": 43,
+      "completion_tokens": 6,
+      "total_tokens": 239,
+      "latency_seconds": 4.5973,
+      "success": true,
+      "is_live": true,
+      "error": null
+    },
+    {
+      "step_index": 2,
+      "step_name": "Synthesize Capacity Insights",
+      "resource_id": "pro",
+      "units": 3,
+      "prompt": "You are an industry analyst. Given high token contention in multi-tenant LLM inference clusters, list 2 structural causes of compound workflow failure under stampede load. Keep response under 100 words.",
+      "response_text": "Structural Causes:**\n    *",
+      "prompt_tokens": 42,
+      "completion_tokens": 7,
+      "total_tokens": 238,
+      "latency_seconds": 3.6866,
+      "success": true,
+      "is_live": true,
+      "error": null
+    },
+    {
+      "step_index": 3,
+      "step_name": "Review and Format Recommendation",
+      "resource_id": "flash",
+      "units": 1,
+      "prompt": "You are an executive editor. Provide a 2-sentence executive summary recommending predictive admission control with sunk-cost protection for compound agent pipelines.",
+      "response_text": "re-routing",
+      "prompt_tokens": 28,
+      "completion_tokens": 3,
+      "total_tokens": 224,
+      "latency_seconds": 2.9776,
+      "success": true,
+      "is_live": true,
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "workflow_id": "wf-008",
+  "scenario_name": "Distributed System Incident Analysis",
+  "agent_type": "Code fix agent",
+  "template_id": "codefix",
+  "total_latency_seconds": 16.2459,
+  "final_progress_pct": 60,
+  "final_status": "RUNNING",
+  "tokens_spent": "2k",
+  "work_at_risk": 2.8,
+  "protection_value": 0.1,
+  "steps": [
+    {
+      "step_index": 1,
+      "step_name": "Parse Incident Diagnostics",
+      "resource_id": "flash",
+      "units": 2,
+      "prompt": "You are an SRE. Diagnose a cascading timeout event where downstream tool reservations expired during long chain execution. State 2 immediate diagnostic hypotheses in 50 words.",
+      "response_text": "",
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "total_tokens": 0,
+      "latency_seconds": 2.6947,
+      "success": false,
+      "is_live": true,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "step_index": 2,
+      "step_name": "Draft Architectural Mitigation",
+      "resource_id": "pro",
+      "units": 4,
+      "prompt": "You are a distributed systems architect. Propose a starvation-preventing aging queue formula with reservation limits to eliminate compound workflow convoy stalls. Be concise (under 80 words).",
+      "response_text": "",
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "total_tokens": 0,
+      "latency_seconds": 10.6053,
+      "success": false,
+      "is_live": true,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "step_index": 3,
+      "step_name": "Verify Resilience Guarantees",
+      "resource_id": "flash",
+      "units": 1,
+      "prompt": "You are a verification engineer. Confirm whether wait aging guarantees finite admission bounds under sustained high load. Respond in 2 sentences.",
+      "response_text": "on latency/admission time?",
+      "prompt_tokens": 25,
+      "completion_tokens": 8,
+      "total_tokens": 221,
+      "latency_seconds": 2.9455,
+      "success": true,
+      "is_live": true,
+      "error": null
+    }
+  ]
+}

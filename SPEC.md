@@ -326,8 +326,8 @@ The demo and presentation lead with the honest scientific narrative:
 
 ## 10. Architectural Decisions & Scope
 
-1. **Frontend Architecture:** The primary dashboard is built with React 19 and Vite (`src/`, `components/`, `views/`), served via Vite dev server or production build, and connected to the backend via REST API (`/api/`) and Server-Sent Events (`/api/stream`). The standalone HTML dashboard (`dashboard/index.html`) is preserved strictly as an offline demonstration fallback.
-2. **Offline Simulator Fallback:** The standalone in-browser simulation engine inside `dashboard/index.html` is preserved for zero-backend offline demonstration.
+1. **Frontend Architecture:** The primary dashboard is built with React 19, TypeScript, and Vite (`src/`, `components/`, `views/`), served via Vite dev server or production build, and connected to the backend via REST API (`/api/`) and Server-Sent Events (`/api/stream`).
+2. **Deterministic Offline Replay:** Recorded workflow traces (`demo/traces/`) provide deterministic offline simulation and demonstration capabilities without external API dependencies via `demo/replay_traces.py`.
 3. **SSE Over WebSockets:** Server-Sent Events (`text/event-stream`) is the standard real-time telemetry protocol between backend and frontend.
 4. **No Pitch-Deck Modal:** UI focuses exclusively on orchestration, live telemetry, workflow inspection, and cost analysis.
 5. **API Key & Cap Guardrails:** `.env` configures `GEMINI_API_KEY`, bounded by strict `GEMINI_CALL_CAP` and `GEMINI_TOKEN_CAP` limits.

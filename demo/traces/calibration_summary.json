@@ -1,0 +1,8 @@
+{
+  "call_count": 9,
+  "total_tokens_consumed": 922,
+  "mean_step_latency_seconds": 3.2753,
+  "median_step_latency_seconds": 2.9455,
+  "calibrated_seconds_per_tick": 2.9455,
+  "traces_saved": 3
+}

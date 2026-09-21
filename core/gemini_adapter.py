@@ -55,7 +55,7 @@ class GeminiProviderAdapter:
                                 os.environ[k.strip()] = v.strip()
 
             self.api_key = os.environ.get("GEMINI_API_KEY", "").strip()
-        self.model = os.environ.get("GEMINI_MODEL", "gemini-1.5-pro").strip()
+        self.model = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash").strip()
         self.call_cap = int(os.environ.get("GEMINI_CALL_CAP", "100"))
         self.token_cap = int(os.environ.get("GEMINI_TOKEN_CAP", "500000"))
         self.calls_made = 0
@@ -105,11 +105,12 @@ class GeminiProviderAdapter:
                 error=f"GEMINI_TOKEN_CAP ({self.token_cap}) reached.",
             )
 
-        endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
+        model_name = self.model.replace("models/", "")
+        endpoint = f"https://generativelanguage.googleapis.com/v1/models/{model_name}:generateContent?key={self.api_key}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"maxOutputTokens": max_tokens},
+            "generationConfig": {"maxOutputTokens": max(max_tokens, 200)},
         }
 
         try:
@@ -119,7 +120,7 @@ class GeminiProviderAdapter:
                 headers=headers,
                 method="POST",
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
 
             self.calls_made += 1
@@ -130,11 +131,13 @@ class GeminiProviderAdapter:
             self.tokens_used += total_tok
 
             candidates = data.get("candidates", [])
-            text = ""
+            text_parts = []
             if candidates:
                 parts = candidates[0].get("content", {}).get("parts", [])
-                if parts:
-                    text = parts[0].get("text", "")
+                for p in parts:
+                    if "text" in p:
+                        text_parts.append(p["text"])
+            text = "".join(text_parts).strip()
 
             return GeminiUsageResult(
                 success=True,

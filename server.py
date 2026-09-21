@@ -21,12 +21,15 @@ Implements all endpoints defined in the Engineering Specification & Correction 1
 - POST /api/gemini/run
 """
 
+import asyncio
+import json
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -62,10 +65,14 @@ class WorkflowCreateRequest(BaseModel):
     name: str
     agentType: str = "Custom agent"
     resourceNeed: str = "Gemini tokens"
+    template_id: Optional[str] = None
+    planned_steps: Optional[List[Dict[str, Any]]] = None
 
 
 class StepRequestPayload(BaseModel):
     step: str
+    resource_id: Optional[str] = "gemini"
+    units: Optional[int] = 1
 
 
 class StepCompletePayload(BaseModel):
@@ -95,6 +102,30 @@ def get_health():
 
 
 # -----------------------------------------------------------------------------
+# Server-Sent Events (SSE) Real-time Stream
+# -----------------------------------------------------------------------------
+
+@app.get("/api/stream")
+async def sse_stream():
+    """Streams real-time controller updates and telemetry events via SSE."""
+    async def event_generator():
+        overview = RUNTIME.get_overview()
+        yield f"event: snapshot\ndata: {json.dumps(overview)}\n\n"
+        last_event_count = len(RUNTIME.events)
+        while True:
+            await asyncio.sleep(1.0)
+            current_count = len(RUNTIME.events)
+            if current_count != last_event_count:
+                events = [e.to_frontend_dict() for e in RUNTIME.events[:max(1, current_count - last_event_count)]]
+                last_event_count = current_count
+                yield f"event: events\ndata: {json.dumps(events)}\n\n"
+            metrics = RUNTIME.get_metrics()
+            yield f"event: metrics\ndata: {json.dumps(metrics)}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+# -----------------------------------------------------------------------------
 # Primary Frontend API Endpoints (matching ControllerApi abstraction)
 # -----------------------------------------------------------------------------
 
@@ -119,49 +150,39 @@ def get_workflow(workflow_id: str):
 
 @app.post("/api/workflows")
 def start_workflow(payload: WorkflowCreateRequest):
-    wf_id = payload.id or f"wf-{len(RUNTIME.workflows_store) + 1:03d}"
-    new_wf = {
-        "id": wf_id,
-        "name": payload.name,
-        "agentType": payload.agentType,
-        "status": "RUNNING",
-        "progress": 0,
-        "workAtRisk": 0.0,
-        "currentStep": "Initializing",
-        "predictionConfidence": 0.85,
-        "reservationType": "NONE",
-        "resourceNeed": payload.resourceNeed,
-        "updatedAt": "now",
-        "tokensSpent": "0",
-        "remainingDemand": "pending",
-        "protectionValue": 0.0,
-        "waitingTime": "0s",
-        "completedSteps": [],
-        "timeline": [{"label": "Initialize", "detail": "Starting step", "state": "current"}],
-    }
-    RUNTIME.workflows_store[wf_id] = new_wf
-    return {"workflowId": wf_id, "accepted": True}
+    return RUNTIME.register_workflow(
+        name=payload.name,
+        workflow_id=payload.id,
+        agent_type=payload.agentType,
+        resource_need=payload.resourceNeed,
+        template_id=payload.template_id,
+        planned_steps=payload.planned_steps,
+    )
 
 
 @app.post("/api/workflows/{workflow_id}/steps/request")
 def request_step(workflow_id: str, payload: StepRequestPayload):
-    wf = RUNTIME.workflows_store.get(workflow_id)
-    if not wf:
-        raise HTTPException(status_code=404, detail="Workflow not found.")
-    decision = "granted" if wf["reservationType"] == "HARD" else "queued"
-    return {"workflowId": workflow_id, "step": payload.step, "decision": decision}
+    try:
+        return RUNTIME.request_step_admission(
+            workflow_id=workflow_id,
+            step=payload.step,
+            resource_id=payload.resource_id or "gemini",
+            units=payload.units or 1,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Workflow '{workflow_id}' not found.")
 
 
 @app.post("/api/workflows/{workflow_id}/steps/complete")
 def complete_step(workflow_id: str, payload: StepCompletePayload):
-    wf = RUNTIME.workflows_store.get(workflow_id)
-    if not wf:
-        raise HTTPException(status_code=404, detail="Workflow not found.")
-    wf["progress"] = min(100, wf["progress"] + 25)
-    if wf["progress"] >= 100:
-        wf["status"] = "COMPLETED"
-        wf["currentStep"] = "Completed"
-    return {"workflowId": workflow_id, "step": payload.step, "recorded": True}
+    try:
+        return RUNTIME.complete_step_execution(
+            workflow_id=workflow_id,
+            step=payload.step,
+            usage=payload.usage,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Workflow '{workflow_id}' not found.")
 
 
 @app.get("/api/resources")

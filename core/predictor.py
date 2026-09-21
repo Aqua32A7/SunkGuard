@@ -11,10 +11,28 @@ Strictly NO access to ground truth future steps, total planned work, or oracle n
 """
 
 from collections import defaultdict
+from dataclasses import dataclass
 import math
 from typing import Any, Dict, List, Optional, Tuple
 
 from core.resources import DEFAULT_RESOURCE_SPECS, ResourceSpec
+
+
+@dataclass
+class PredictionResult:
+    """Prediction outcome supporting both attribute access and tuple unpacking."""
+    steps: List[Dict[str, Any]]
+    confidence: float
+    expected_tokens: float
+
+    def __iter__(self):
+        return iter((self.steps, self.confidence, self.expected_tokens))
+
+    def __getitem__(self, idx):
+        return (self.steps, self.confidence, self.expected_tokens)[idx]
+
+    def __len__(self):
+        return 3
 
 
 class NonOraclePredictor:
@@ -58,49 +76,46 @@ class NonOraclePredictor:
             steps = trace["steps"]
             template_lens[tid].append(len(steps))
 
-            if not steps:
-                continue
+            for i, st in enumerate(steps):
+                r_id = st["resource_id"]
+                if i == 0:
+                    self.initial_steps[tid][r_id] += 1
+                else:
+                    prev_r = steps[i - 1]["resource_id"]
+                    self.transitions[tid][i - 1][prev_r][r_id] += 1
 
-            first_r = steps[0]["resource_id"]
-            self.initial_steps[tid][first_r] += 1
-
-            for i, step in enumerate(steps):
-                rid = step["resource_id"]
-                key = (tid, i, rid)
+                # Update EWMA parameter tracker for (template, step_idx, resource)
+                key = (tid, i, r_id)
                 if key not in self.step_stats:
                     self.step_stats[key] = {
-                        "units": float(step["units"]),
-                        "duration": float(step["duration"]),
-                        "work": float(step["work"]),
-                        "tokens": float(step["tokens"]),
-                        "count": 1.0,
+                        "units": float(st["units"]),
+                        "duration": float(st["duration"]),
+                        "work": float(st["work"]),
+                        "tokens": float(st.get("tokens", 0)),
+                        "count": 1,
                     }
                 else:
-                    # Update with EWMA
-                    st = self.step_stats[key]
-                    st["units"] = (1 - self.ewma_alpha) * st["units"] + self.ewma_alpha * step["units"]
-                    st["duration"] = (1 - self.ewma_alpha) * st["duration"] + self.ewma_alpha * step["duration"]
-                    st["work"] = (1 - self.ewma_alpha) * st["work"] + self.ewma_alpha * step["work"]
-                    st["tokens"] = (1 - self.ewma_alpha) * st["tokens"] + self.ewma_alpha * step["tokens"]
-                    st["count"] += 1.0
-
-                if i < len(steps) - 1:
-                    next_r = steps[i + 1]["resource_id"]
-                    self.transitions[tid][i][rid][next_r] += 1
+                    cur = self.step_stats[key]
+                    cur["units"] = (1.0 - self.ewma_alpha) * cur["units"] + self.ewma_alpha * st["units"]
+                    cur["duration"] = (1.0 - self.ewma_alpha) * cur["duration"] + self.ewma_alpha * st["duration"]
+                    cur["work"] = (1.0 - self.ewma_alpha) * cur["work"] + self.ewma_alpha * st["work"]
+                    cur["tokens"] = (1.0 - self.ewma_alpha) * cur["tokens"] + self.ewma_alpha * st.get("tokens", 0)
+                    cur["count"] += 1
 
         for tid, lens in template_lens.items():
-            self.template_lengths[tid] = sum(lens) / len(lens)
+            self.template_lengths[tid] = sum(lens) / max(1, len(lens))
 
         self.is_trained = True
 
     def predict_remaining(
         self,
         template_id: str,
-        observed_history: List[Dict[str, Any]],
-        current_step_idx: int,
-        horizon: int,
+        observed_history: Optional[List[Dict[str, Any]]] = None,
+        current_step_idx: int = 0,
+        horizon: int = 4,
         elapsed_ticks: int = 0,
-    ) -> Tuple[List[Dict[str, Any]], float, float]:
+        history: Optional[List[Dict[str, Any]]] = None,
+    ) -> PredictionResult:
         """Non-oracle downstream prediction.
 
         Parameters:
@@ -111,10 +126,9 @@ class NonOraclePredictor:
         - elapsed_ticks: Total ticks workflow has been in system
 
         Returns:
-        - predicted_steps: List of predicted step dicts
-        - confidence: Predictor confidence in [0.10, 0.95]
-        - estimated_total_work: Estimated total planned work for this workflow
+        - PredictionResult: Supports (steps, confidence, total_work) indexing and attributes.
         """
+        obs = observed_history if observed_history is not None else (history or [])
         est_len = int(round(self.template_lengths.get(template_id, 4.0)))
         steps_remaining = max(0, est_len - current_step_idx)
         lookahead = min(horizon, steps_remaining)
@@ -123,7 +137,7 @@ class NonOraclePredictor:
         path_confidence = 1.0
 
         # Last observed resource
-        last_r = observed_history[-1]["resource_id"] if observed_history else None
+        last_r = obs[-1]["resource_id"] if obs else None
 
         for step_offset in range(lookahead):
             target_idx = current_step_idx + step_offset
@@ -167,14 +181,14 @@ class NonOraclePredictor:
             last_r = best_r
 
         # Predict total workflow work = observed work + predicted remaining work
-        observed_work = sum(s["work"] for s in observed_history)
-        predicted_remaining_work = sum(s["work"] for s in predicted_steps)
+        observed_work = sum(s.get("work", 1200) for s in obs)
+        predicted_remaining_work = sum(s.get("work", 1200) for s in predicted_steps)
         estimated_total_work = observed_work + predicted_remaining_work
 
         # Clamp confidence to [0.10, 0.95]
         bounded_confidence = max(0.10, min(0.95, path_confidence))
 
-        return predicted_steps, bounded_confidence, estimated_total_work
+        return PredictionResult(predicted_steps, bounded_confidence, estimated_total_work)
 
 
 def train_predictor_on_dev_seeds(
