@@ -12,21 +12,24 @@ Evaluates 8 controller variants across loads [0.25, 0.50, 0.70]:
 8. Full SunkGuard (reservations + progress + aging)
 
 Per load reports:
-- Wasted-token ratio
-- Overall failure rate
-- Late failure rate
-- Completed runs
-- Added wait (ticks) and p95 wait
-- Resource utilization
-- Reservation waste
-- Jain's fairness index
-- p95 completion duration
-- Predictor hit rate
-- Paired 95% Confidence Intervals
+- Wasted-token ratio (mean, 95% CI, paired 95% CI vs baseline)
+- Overall failure rate (mean, 95% CI, paired 95% CI vs baseline)
+- Late failure rate (mean, 95% CI, mean count, paired 95% CI vs baseline)
+- Completed runs (mean, 95% CI, paired 95% CI vs baseline)
+- Added wait (mean ticks, paired 95% CI vs baseline) and p95 wait
+- Resource utilization (mean, 95% CI, paired 95% CI vs baseline)
+- Reservation waste (mean, 95% CI)
+- Jain's fairness index (mean, 95% CI, paired 95% CI vs baseline)
+- p95 completion duration (mean, 95% CI, paired 95% CI vs baseline)
+- Predictor hit rate (mean, 95% CI)
+- Paired 95% Confidence Intervals for all metrics vs baseline
 
-New Criterion:
-Full must beat the best no-reservation variant by >= 20% relative on wasted tokens,
-CI strictly excluding zero, within the wait ceilings (< 2.0x vs baseline).
+Machine-Readable Verdict Criteria per Load:
+1. Relative token waste reduction: Full SunkGuard must beat the best
+   no-reservation variant by >= 20.0% relative.
+2. Statistical significance: Paired 95% CI of absolute reduction strictly
+   excludes zero and favors Full (CI lower bound > 0).
+3. Wait ceiling: Full SunkGuard new work wait ratio vs baseline < 2.00x.
 """
 
 import argparse
@@ -47,6 +50,53 @@ from core.metrics import collect_metrics, percentile
 from core.predictor import train_predictor_on_dev_seeds
 from core.seeds import DEV_SEEDS, PHASE3_FRESH_SEEDS
 from core.sim import SimulationConfig, SimulationEngine
+
+
+def check_git_integrity(expected_tag: str = "thesis-gate3-frozen") -> str:
+    """Verifies that the working tree is clean and HEAD matches the expected tag."""
+    status_proc = subprocess.run(
+        ["git", "status", "--porcelain"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    dirty = status_proc.stdout.strip()
+    if dirty:
+        raise RuntimeError(
+            f"REFUSING TO RUN: Git working tree is dirty!\nUncommitted changes:\n{dirty}\n"
+            f"Commit all changes and tag with '{expected_tag}' before running Gate 3."
+        )
+
+    commit_proc = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    head_commit = commit_proc.stdout.strip()
+
+    tag_proc = subprocess.run(
+        ["git", "describe", "--tags", "--exact-match"],
+        capture_output=True,
+        text=True,
+    )
+    if tag_proc.returncode != 0 or tag_proc.stdout.strip() != expected_tag:
+        current_tags = tag_proc.stdout.strip() if tag_proc.returncode == 0 else "None"
+        raise RuntimeError(
+            f"REFUSING TO RUN: HEAD ({head_commit[:8]}) does not match tag '{expected_tag}'! "
+            f"Current tag: '{current_tags}'."
+        )
+
+    return head_commit
+
+
+def compute_config_hash() -> str:
+    """Computes SHA-256 hash of frozen policy parameters."""
+    cfg_dump = json.dumps(
+        {k: vars(v) for k, v in sorted(POLICIES.items())},
+        sort_keys=True,
+    )
+    return hashlib.sha256(cfg_dump.encode("utf-8")).hexdigest()
 
 
 def compute_ci(data: List[float], confidence: float = 0.95) -> Tuple[float, float, float]:
@@ -77,9 +127,16 @@ def run_gate3_evaluation(
     loads: List[float],
     ticks: int = 150,
 ) -> Dict[str, Any]:
+    commit_hash = check_git_integrity("thesis-gate3-frozen")
+    cfg_hash = compute_config_hash()
+
     print(f"\n================================================================================")
     print(f"       PHASE 3 ABLATION EVALUATION (SEEDS {seeds[0]}..{seeds[-1]}, {len(seeds)} SEEDS)       ")
     print(f"================================================================================")
+    print(f"Git Commit:   {commit_hash}")
+    print(f"Git Tag:      thesis-gate3-frozen")
+    print(f"Config Hash:  {cfg_hash[:16]}...")
+    print(f"Timestamp:    {datetime.now(timezone.utc).isoformat()}")
 
     # Train predictor on dev seeds 1..20
     predictor = train_predictor_on_dev_seeds(dev_seeds=DEV_SEEDS, ticks=ticks)
@@ -97,9 +154,15 @@ def run_gate3_evaluation(
 
     all_results: Dict[str, Any] = {
         "evaluation_name": "Phase 3 Comprehensive Ablation",
+        "commit_hash": commit_hash,
+        "git_tag": "thesis-gate3-frozen",
+        "config_hash": cfg_hash,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "seeds": f"{seeds[0]}..{seeds[-1]}",
         "seed_count": len(seeds),
+        "seed_list": seeds,
         "loads": loads,
+        "ticks_per_simulation": ticks,
         "load_results": {},
         "verdicts_per_load": {},
         "overall_verdict": True,
@@ -163,9 +226,10 @@ def run_gate3_evaluation(
                 raw["pred_hit"].append(m.predictor_hit_rate)
                 raw_waits_per_variant[label].extend(engine.initial_admission_waits)
 
-        # Compute per-variant aggregated metrics and CIs
-        base_wait_mean = sum(raw_seed_metrics["Baseline"]["wait_ticks"]) / len(seeds)
+        base_raw = raw_seed_metrics["Baseline"]
+        base_wait_mean = sum(base_raw["wait_ticks"]) / len(seeds)
 
+        # Compute per-variant aggregated metrics, marginal CIs, and paired CIs vs Baseline
         for label, _, _, group in variants:
             raw = raw_seed_metrics[label]
             wasted_m, wasted_l, wasted_u = compute_ci(raw["wasted_tok_ratio"])
@@ -175,56 +239,73 @@ def run_gate3_evaluation(
             done_m, done_l, done_u = compute_ci(raw["done_count"])
             wait_m, wait_l, wait_u = compute_ci(raw["wait_ticks"])
             util_m, util_l, util_u = compute_ci(raw["utilization"])
-            rsv_w_m, _, _ = compute_ci(raw["rsv_waste"])
+            rsv_w_m, rsv_w_l, rsv_w_u = compute_ci(raw["rsv_waste"])
             jain_m, jain_l, jain_u = compute_ci(raw["jain"])
-            p95_dur_m, _, _ = compute_ci(raw["p95_dur"])
-            pred_hit_m, _, _ = compute_ci(raw["pred_hit"])
+            p95_dur_m, p95_dur_l, p95_dur_u = compute_ci(raw["p95_dur"])
+            pred_hit_m, pred_hit_l, pred_hit_u = compute_ci(raw["pred_hit"])
 
             p95_wait = percentile(raw_waits_per_variant[label], 0.95)
-            added_wait = wait_m - base_wait_mean
             wait_ratio = (wait_m / base_wait_mean) if base_wait_mean > 0 else 1.0
 
-            # Paired CI on added wait vs Baseline
-            added_wait_diff, added_wait_l, added_wait_u, _ = compute_paired_ci(
-                raw["wait_ticks"], raw_seed_metrics["Baseline"]["wait_ticks"]
-            )
+            # Paired CIs vs Baseline across seeds
+            paired_wasted_diff, p_wasted_l, p_wasted_u, _ = compute_paired_ci(raw["wasted_tok_ratio"], base_raw["wasted_tok_ratio"])
+            paired_fail_diff, p_fail_l, p_fail_u, _ = compute_paired_ci(raw["fail_rate"], base_raw["fail_rate"])
+            paired_late_diff, p_late_l, p_late_u, _ = compute_paired_ci(raw["late_fail_rate"], base_raw["late_fail_rate"])
+            paired_done_diff, p_done_l, p_done_u, _ = compute_paired_ci(raw["done_count"], base_raw["done_count"])
+            paired_wait_diff, p_wait_l, p_wait_u, _ = compute_paired_ci(raw["wait_ticks"], base_raw["wait_ticks"])
+            paired_util_diff, p_util_l, p_util_u, _ = compute_paired_ci(raw["utilization"], base_raw["utilization"])
+            paired_jain_diff, p_jain_l, p_jain_u, _ = compute_paired_ci(raw["jain"], base_raw["jain"])
+            paired_dur_diff, p_dur_l, p_dur_u, _ = compute_paired_ci(raw["p95_dur"], base_raw["p95_dur"])
 
             load_data[label] = {
                 "group": group,
                 "wasted_token_ratio": {
                     "mean": round(wasted_m, 4),
                     "ci_95": [round(wasted_l, 4), round(wasted_u, 4)],
+                    "paired_diff_vs_baseline": [round(paired_wasted_diff, 4), round(p_wasted_l, 4), round(p_wasted_u, 4)],
                 },
                 "overall_failure_rate": {
                     "mean": round(fail_m, 4),
                     "ci_95": [round(fail_l, 4), round(fail_u, 4)],
+                    "paired_diff_vs_baseline": [round(paired_fail_diff, 4), round(p_fail_l, 4), round(p_fail_u, 4)],
                 },
                 "late_failure_rate": {
                     "mean": round(late_m, 4),
                     "ci_95": [round(late_l, 4), round(late_u, 4)],
                     "mean_count": round(late_cnt_m, 2),
+                    "paired_diff_vs_baseline": [round(paired_late_diff, 4), round(p_late_l, 4), round(p_late_u, 4)],
                 },
                 "completed_runs": {
                     "mean": round(done_m, 2),
                     "ci_95": [round(done_l, 2), round(done_u, 2)],
+                    "paired_diff_vs_baseline": [round(paired_done_diff, 2), round(p_done_l, 2), round(p_done_u, 2)],
                 },
                 "new_work_wait": {
                     "mean_ticks": round(wait_m, 3),
                     "p95_ticks": round(p95_wait, 2),
-                    "added_wait_ticks": round(added_wait_diff, 3),
-                    "added_wait_ci_95": [round(added_wait_l, 3), round(added_wait_u, 3)],
+                    "added_wait_ticks": round(paired_wait_diff, 3),
+                    "added_wait_ci_95": [round(p_wait_l, 3), round(p_wait_u, 3)],
                     "wait_ratio_vs_base": round(wait_ratio, 2),
                 },
                 "resource_utilization": {
                     "mean": round(util_m, 4),
                     "ci_95": [round(util_l, 4), round(util_u, 4)],
+                    "paired_diff_vs_baseline": [round(paired_util_diff, 4), round(p_util_l, 4), round(p_util_u, 4)],
                 },
-                "reservation_waste": round(rsv_w_m, 4),
+                "reservation_waste": {
+                    "mean": round(rsv_w_m, 4),
+                    "ci_95": [round(rsv_w_l, 4), round(rsv_w_u, 4)],
+                },
                 "jain_fairness": {
                     "mean": round(jain_m, 4),
                     "ci_95": [round(jain_l, 4), round(jain_u, 4)],
+                    "paired_diff_vs_baseline": [round(paired_jain_diff, 4), round(p_jain_l, 4), round(p_jain_u, 4)],
                 },
-                "p95_completion_duration": round(p95_dur_m, 2),
+                "p95_completion_duration": {
+                    "mean": round(p95_dur_m, 2),
+                    "ci_95": [round(p95_dur_l, 2), round(p95_dur_u, 2)],
+                    "paired_diff_vs_baseline": [round(paired_dur_diff, 2), round(p_dur_l, 2), round(p_dur_u, 2)],
+                },
                 "predictor_hit_rate": {
                     "mean": round(pred_hit_m, 4),
                     "ci_95": [round(pred_hit_l, 4), round(pred_hit_u, 4)],
@@ -248,7 +329,7 @@ def run_gate3_evaluation(
         # 1. Full beats best no-reservation variant by >= 20% relative on wasted tokens
         criterion_20pct_rel = rel_reduction >= 0.20
         # 2. 95% CI on absolute reduction excludes zero and favors Full (diff_l > 0)
-        criterion_ci_excludes_zero = diff_l > 0.0
+        criterion_ci_excludes_zero = (diff_l > 0.0)
         # 3. Within wait ceilings (< 2.0x vs baseline)
         full_wait_ratio = load_data["Full SunkGuard"]["new_work_wait"]["wait_ratio_vs_base"]
         criterion_wait_ceiling = full_wait_ratio < 2.00
@@ -265,7 +346,7 @@ def run_gate3_evaluation(
             "full_wait_ratio_vs_baseline": round(full_wait_ratio, 2),
             "criteria": {
                 "rel_reduction_gte_20pct": {
-                    "value": round(rel_reduction * 100, 2),
+                    "value_pct": round(rel_reduction * 100, 2),
                     "threshold_pct": 20.0,
                     "passed": criterion_20pct_rel,
                 },
@@ -290,7 +371,7 @@ def run_gate3_evaluation(
 
         # Print Table for this load
         print(f"\n--- RESULTS TABLE AT LOAD {load} ---")
-        header = f"{'Variant':<32} | {'Wasted Tok %':<16} | {'Fail %':<10} | {'Late Fails':<10} | {'Done':<8} | {'Wait (t)':<10} | {'p95 W':<8} | {'Util %':<8} | {'Jain':<6}"
+        header = f"{'Variant':<32} | {'Wasted Tok %':<18} | {'Fail %':<10} | {'Late Fails':<10} | {'Done':<8} | {'Wait (t)':<12} | {'p95 W':<8} | {'Util %':<8} | {'Jain':<6}"
         print("-" * len(header))
         print(header)
         print("-" * len(header))
@@ -304,7 +385,7 @@ def run_gate3_evaluation(
             p95w_str = f"{d['new_work_wait']['p95_ticks']:.1f}t"
             u_str = f"{d['resource_utilization']['mean']*100:.1f}%"
             j_str = f"{d['jain_fairness']['mean']:.2f}"
-            print(f"{label:<32} | {w_str:<16} | {f_str:<10} | {lf_str:<10} | {done_str:<8} | {wait_str:<10} | {p95w_str:<8} | {u_str:<8} | {j_str:<6}")
+            print(f"{label:<32} | {w_str:<18} | {f_str:<10} | {lf_str:<10} | {done_str:<8} | {wait_str:<12} | {p95w_str:<8} | {u_str:<8} | {j_str:<6}")
         print("-" * len(header))
         print(f"Comparison: Full SunkGuard vs Best No-Reservation Variant ({best_no_rsv_label}):")
         print(f"  Relative Token Waste Reduction: {rel_reduction*100:.2f}% (Required: >= 20.0%) -> {'PASS' if criterion_20pct_rel else 'FAIL'}")
