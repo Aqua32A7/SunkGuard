@@ -1,0 +1,154 @@
+{
+  "oldest_first": {
+    "variant": "oldest_first",
+    "workflows_dispatched": 6,
+    "completed": 6,
+    "total_tokens_consumed": 164,
+    "mean_workflow_latency_sec": 1.928,
+    "batch_duration_sec": 3.24,
+    "details": [
+      {
+        "workflow_id": "wf-c01-old",
+        "name": "Market Trend Extractor",
+        "status": "COMPLETED",
+        "prompt_tokens": 20,
+        "completion_tokens": 12,
+        "total_tokens": 32,
+        "latency_seconds": 0.962,
+        "is_live": true,
+        "output_snippet": "Liquid cooling integration for high-density generative AI da"
+      },
+      {
+        "workflow_id": "wf-c02-old",
+        "name": "Database Lock Diagnoser",
+        "status": "COMPLETED",
+        "prompt_tokens": 13,
+        "completion_tokens": 12,
+        "total_tokens": 25,
+        "latency_seconds": 0.961,
+        "is_live": true,
+        "output_snippet": "Global wait-for graphs detect loops across multiple database"
+      },
+      {
+        "workflow_id": "wf-c03-old",
+        "name": "SRE Incident Classifier",
+        "status": "COMPLETED",
+        "prompt_tokens": 14,
+        "completion_tokens": 11,
+        "total_tokens": 25,
+        "latency_seconds": 1.874,
+        "is_live": true,
+        "output_snippet": "One failing service triggers a chain reaction across depende"
+      },
+      {
+        "workflow_id": "wf-c04-old",
+        "name": "API Rate Limit Synthesizer",
+        "status": "COMPLETED",
+        "prompt_tokens": 15,
+        "completion_tokens": 12,
+        "total_tokens": 27,
+        "latency_seconds": 1.921,
+        "is_live": true,
+        "output_snippet": "Token bucket allows bursting; leaky bucket smooths traffic c"
+      },
+      {
+        "workflow_id": "wf-c05-old",
+        "name": "Vector Index Optimizer",
+        "status": "COMPLETED",
+        "prompt_tokens": 15,
+        "completion_tokens": 15,
+        "total_tokens": 30,
+        "latency_seconds": 2.618,
+        "is_live": true,
+        "output_snippet": "Extremely faster approximate search at scale, sacrificing a "
+      },
+      {
+        "workflow_id": "wf-c06-old",
+        "name": "Admission Policy Verifier",
+        "status": "COMPLETED",
+        "prompt_tokens": 13,
+        "completion_tokens": 12,
+        "total_tokens": 25,
+        "latency_seconds": 3.235,
+        "is_live": true,
+        "output_snippet": "Allocating distributed resources early using forecasted dema"
+      }
+    ]
+  },
+  "admission_only": {
+    "variant": "admission_only",
+    "workflows_dispatched": 6,
+    "completed": 6,
+    "total_tokens_consumed": 173,
+    "mean_workflow_latency_sec": 1.79,
+    "batch_duration_sec": 2.735,
+    "details": [
+      {
+        "workflow_id": "wf-c01-adm",
+        "name": "Market Trend Extractor",
+        "status": "COMPLETED",
+        "prompt_tokens": 20,
+        "completion_tokens": 17,
+        "total_tokens": 37,
+        "latency_seconds": 0.94,
+        "is_live": true,
+        "output_snippet": "Silicon-photonic interconnects overcoming GPU bandwidth bott"
+      },
+      {
+        "workflow_id": "wf-c02-adm",
+        "name": "Database Lock Diagnoser",
+        "status": "COMPLETED",
+        "prompt_tokens": 13,
+        "completion_tokens": 15,
+        "total_tokens": 28,
+        "latency_seconds": 0.956,
+        "is_live": true,
+        "output_snippet": "Global wait-for graphs track cross-node resource conflicts t"
+      },
+      {
+        "workflow_id": "wf-c03-adm",
+        "name": "SRE Incident Classifier",
+        "status": "COMPLETED",
+        "prompt_tokens": 14,
+        "completion_tokens": 11,
+        "total_tokens": 25,
+        "latency_seconds": 2.55,
+        "is_live": true,
+        "output_snippet": "One failing service triggers a chain reaction across depende"
+      },
+      {
+        "workflow_id": "wf-c04-adm",
+        "name": "API Rate Limit Synthesizer",
+        "status": "COMPLETED",
+        "prompt_tokens": 15,
+        "completion_tokens": 13,
+        "total_tokens": 28,
+        "latency_seconds": 1.819,
+        "is_live": true,
+        "output_snippet": "Token bucket allows bursty traffic; leaky bucket ensures con"
+      },
+      {
+        "workflow_id": "wf-c05-adm",
+        "name": "Vector Index Optimizer",
+        "status": "COMPLETED",
+        "prompt_tokens": 15,
+        "completion_tokens": 14,
+        "total_tokens": 29,
+        "latency_seconds": 1.74,
+        "is_live": true,
+        "output_snippet": "HNSW is significantly faster for large-scale approximate nea"
+      },
+      {
+        "workflow_id": "wf-c06-adm",
+        "name": "Admission Policy Verifier",
+        "status": "COMPLETED",
+        "prompt_tokens": 13,
+        "completion_tokens": 13,
+        "total_tokens": 26,
+        "latency_seconds": 2.734,
+        "is_live": true,
+        "output_snippet": "Anticipating resource demand to reserve network capacity bef"
+      }
+    ]
+  }
+}

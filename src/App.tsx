@@ -91,7 +91,16 @@ function App() {
       </aside>
       {sidebarOpen && <button className="mobile-overlay" onClick={() => setSidebarOpen(false)} aria-label="Close navigation" />}
       <main className="main-shell">
-        <Topbar onOpenNavigation={() => setSidebarOpen(true)} backendConnected={backendConnected} />
+        <Topbar
+          onOpenNavigation={() => setSidebarOpen(true)}
+          backendConnected={backendConnected}
+          isStaticDemo={sunkGuardApi.isStaticDemoMode()}
+          onToggleStaticDemo={() => {
+            const next = !sunkGuardApi.isStaticDemoMode()
+            sunkGuardApi.setStaticDemoMode(next)
+            refreshOverview()
+          }}
+        />
         <Routes>
           <Route path="/" element={<OverviewPage {...overview} policyMode={policyMode} setPolicyMode={handlePolicyChange} onRunDemo={runDemo} demoNotice={demoNotice} />} />
           <Route path="/workflows" element={<WorkflowsPage data={overview} onRunDemo={runDemo} onWrongPrediction={runMismatch} demoNotice={demoNotice} />} />
@@ -106,10 +115,26 @@ function App() {
   </BrowserRouter>
 }
 
-function Topbar({ onOpenNavigation, backendConnected }: { onOpenNavigation: () => void; backendConnected: boolean }) {
+function Topbar({ onOpenNavigation, backendConnected, isStaticDemo, onToggleStaticDemo }: { onOpenNavigation: () => void; backendConnected: boolean; isStaticDemo: boolean; onToggleStaticDemo: () => void }) {
   const location = useLocation()
   const current = navItems.find((item) => item.path === location.pathname)?.label ?? 'Overview'
-  return <header className="topbar"><button className="icon-button menu-button" onClick={onOpenNavigation} aria-label="Open navigation"><Menu size={20} /></button><div className="breadcrumbs"><span>Control plane</span><span>/</span><strong>{current}</strong></div><div className="topbar-actions"><div className="live-indicator"><span className={`status-dot ${backendConnected ? 'connected' : 'warning'}`} /> {backendConnected ? 'Backend: Connected' : 'Demo / Mock mode'}</div><button className="icon-button" aria-label="Notifications"><Bell size={18} /><i /></button><div className="user-avatar">AS</div></div></header>
+  return <header className="topbar">
+    <button className="icon-button menu-button" onClick={onOpenNavigation} aria-label="Open navigation"><Menu size={20} /></button>
+    <div className="breadcrumbs"><span>Control plane</span><span>/</span><strong>{current}</strong></div>
+    <div className="topbar-actions">
+      <button
+        className={`button ${isStaticDemo ? 'primary' : 'secondary'}`}
+        style={{ padding: '4px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}
+        onClick={onToggleStaticDemo}
+        title="Toggle static demo mode reading eval/results/*.json and demo/traces/*.json"
+      >
+        <Database size={13} /> {isStaticDemo ? 'Static Demo (eval + traces)' : 'Live API Mode'}
+      </button>
+      <div className="live-indicator"><span className={`status-dot ${backendConnected ? 'connected' : 'warning'}`} /> {backendConnected ? 'Backend: Connected' : 'Demo Mode'}</div>
+      <button className="icon-button" aria-label="Notifications"><Bell size={18} /><i /></button>
+      <div className="user-avatar">SG</div>
+    </div>
+  </header>
 }
 
 function OverviewPage({ metrics, workflows, resources, reservations, prediction, events, experiment, policy, policyMode, setPolicyMode, onRunDemo, demoNotice }: Overview & { policyMode: PolicyMode; setPolicyMode: (mode: PolicyMode) => void; onRunDemo: () => void; demoNotice?: string }) {

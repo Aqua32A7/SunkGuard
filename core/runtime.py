@@ -66,9 +66,9 @@ class SunkGuardRuntimeManager:
         # Non-oracle predictor trained on dev seeds
         self.predictor = train_predictor_on_dev_seeds(dev_seeds=DEV_SEEDS, ticks=150)
 
-        # SunkGuard controller & resource manager
+        # SunkGuard controller & resource manager (default variant: admission_only, full opt-in)
         self.rm = ResourceManager()
-        self.controller = SunkGuardController(self.rng, policy="medium", predictor=self.predictor)
+        self.controller = SunkGuardController(self.rng, policy="medium", variant="admission_only", predictor=self.predictor)
 
         # Event stream and decision records
         self.events: List[CanonicalEvent] = []

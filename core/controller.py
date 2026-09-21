@@ -172,7 +172,8 @@ class BaselineController(BaseController):
                 if self.variant == "baseline_backoff":
                     wf.retry_attempts += 1
                     base_delay = min(8, 2 ** min(wf.retry_attempts, 3))
-                    jitter = self.rng.randrange(0, base_delay + 1)
+                    rem_budget = max(0, (cfg.pat if wf.step_index > 0 else cfg.qpat) - wf.wait_time)
+                    jitter = min(self.rng.randrange(0, base_delay + 1), rem_budget)
                     wf.backoff_until = tick + jitter
 
                 # Check patience exhaustion
@@ -206,7 +207,7 @@ class SunkGuardController(BaseController):
         self,
         rng: SeededRNG,
         policy: ControllerPolicy = "medium",
-        variant: ControllerVariant = "full_sunkguard",
+        variant: ControllerVariant = "admission_only",
         predictor: Optional[NonOraclePredictor] = None,
         beta_pv: float = 1.0,
     ):
@@ -449,10 +450,12 @@ class SunkGuardController(BaseController):
         if self.variant == "fifo_request":
             # Earliest step request time first
             queue = sorted(candidates, key=lambda w: (w.step_requested_tick, w.id))
-        elif self.variant in ("fifo", "oldest_first"):
-            # Earliest workflow birth time first
+        elif self.variant == "oldest_first":
+            # Strict arrival order (workflow birth time)
             queue = sorted(candidates, key=lambda w: (w.born_tick, w.id))
         else:
+            # SunkGuard / Admission-Only / original Gate 3 FIFO:
+            # Sort by score descending with deterministic arrival tie-breaking
             queue = sorted(candidates, key=lambda w: (w.score, -w.born_tick, -w.id), reverse=True)
 
         for wf in queue:

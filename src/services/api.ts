@@ -1,7 +1,9 @@
 import { events, experiment, metrics, policy, prediction, reservations, resources, workflows } from '../data/mockData'
 import type { PolicyMode, Workflow } from '../domain/types'
+import { getStaticOverview, staticEvalResults, staticTraces } from './staticDemoData'
 
 let _isBackendConnected: boolean | null = null
+let _useStaticDemo: boolean = false
 
 export interface ControllerApi {
   getOverview: () => Promise<{
@@ -13,6 +15,7 @@ export interface ControllerApi {
     reservations: typeof reservations
     resources: typeof resources
     workflows: typeof workflows
+    isStaticDemo?: boolean
   }>
   startWorkflow: (workflow: Workflow) => Promise<{ workflowId: string; accepted: boolean }>
   requestStep: (workflowId: string, step: string) => Promise<{ workflowId: string; step: string; decision: 'queued' | 'granted' }>
@@ -26,6 +29,9 @@ export interface ControllerApi {
   demoReset: (seed?: number) => Promise<{ reset: boolean; seed?: number }>
   demoMismatch: () => Promise<{ notice: string; success: boolean }>
   isBackendConnected: () => boolean | null
+  isStaticDemoMode: () => boolean
+  setStaticDemoMode: (enabled: boolean) => void
+  getStaticDataSummary: () => { evalFiles: string[]; traceFiles: string[] }
 }
 
 export const sunkGuardApi: ControllerApi = {
@@ -33,7 +39,25 @@ export const sunkGuardApi: ControllerApi = {
     return _isBackendConnected
   },
 
+  isStaticDemoMode() {
+    return _useStaticDemo
+  },
+
+  setStaticDemoMode(enabled: boolean) {
+    _useStaticDemo = enabled
+  },
+
+  getStaticDataSummary() {
+    return {
+      evalFiles: Object.keys(staticEvalResults),
+      traceFiles: Object.keys(staticTraces),
+    }
+  },
+
   async getOverview() {
+    if (_useStaticDemo) {
+      return getStaticOverview()
+    }
     try {
       const res = await fetch('/api/overview')
       if (res.ok) {
@@ -44,7 +68,8 @@ export const sunkGuardApi: ControllerApi = {
       throw new Error(`HTTP ${res.status}`)
     } catch {
       _isBackendConnected = false
-      return { events, experiment, metrics, policy, prediction, reservations, resources, workflows }
+      // Fallback to static demo data generated from eval/results and demo/traces
+      return getStaticOverview()
     }
   },
 

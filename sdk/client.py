@@ -18,9 +18,11 @@ class SunkGuardClient:
         self,
         base_url: Optional[str] = None,
         in_memory: Optional[bool] = None,
+        variant: str = "admission_only",
     ):
         self.base_url = (base_url or os.environ.get("SUNKGUARD_API_URL", "http://localhost:8000")).rstrip("/")
         self._runtime = None
+        self.variant = variant
 
         if in_memory is not None:
             self.in_memory = in_memory
