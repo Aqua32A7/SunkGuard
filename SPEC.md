@@ -90,17 +90,17 @@ $$\Delta \text{Risk}(W) = \Delta P_{\text{failure}}(W) \cdot W_{\text{done}}$$
 
 ### 4.2 Mathematical Derivation of the Operational Estimator
 
-#### Step Contention Modeling
-For each downstream step $j \in \{k+1, \dots, \min(k+h, N)\}$, let resource $r_j$ have capacity $C_{r_j}$, currently used units $U_{r_j}$, queued demand $Q_{r_j}$, and workflow patience limit $\tau_{\text{pat}}$.
+#### Step Contention Modeling: Online Heuristic vs Data-Driven Estimation
+**Methodology Clarification (Phase 0–1 Foundation):**
+In Phase 0–1, $S_{\text{rsv}}$ and $S_{\text{no\_rsv}}$ are estimated via an **online closed-loop hazard heuristic** calculated from instantaneous resource state at tick $t$, rather than an offline statistical model fit to historical data. 
 
-The instantaneous load ratio is:
-$$\rho(r_j) = \frac{U_{r_j} + Q_{r_j}}{C_{r_j}}$$
+Specifically:
+- **Heuristic Estimation (Phase 0–1 Implementation):** At runtime, the controller samples the instantaneous load ratio $\rho(r_j) = \frac{U_{r_j} + Q_{r_j}}{C_{r_j}}$. The step hazard rate is estimated via a linearized queue saturation heuristic:
+  $$h_j = \min\left(1.0, \; \max\left(0.0, \; \frac{\rho(r_j) - 1.0 + \delta_{\text{buffer}}}{\tau_{\text{pat}} / d_j}\right)\right)$$
+  where $\delta_{\text{buffer}} = 0.15$ represents the variance buffer.
+- **Data-Driven Transition (Phase 2 Roadmap):** In Phase 2, this heuristic will be augmented/replaced by an empirical survival function $\hat{S}_j(t \mid \text{state})$ learned from historical workflow execution logs on designated training seeds (seeds 1–20), accounting for empirical divergence rates, step duration variance, and non-stationary load patterns.
 
-The step hazard rate without reservation is modeled by the contention probability:
-$$h_j = \min\left(1.0, \; \max\left(0.0, \; \frac{\rho(r_j) - 1.0 + \delta_{\text{buffer}}}{\tau_{\text{pat}} / d_j}\right)\right)$$
-where $\delta_{\text{buffer}} = 0.15$ accounts for variance in execution time.
-
-The cumulative survival probability across the lookahead horizon without reservation is:
+The cumulative survival probability across the lookahead horizon without reservation under the heuristic is:
 $$S_{\text{no\_rsv}}(W) = \prod_{j=k+1}^{\min(k+h, N)} (1 - h_j)$$
 giving baseline failure probability:
 $$P_{\text{fail}}(W \mid \varnothing) = 1 - S_{\text{no\_rsv}}(W)$$
