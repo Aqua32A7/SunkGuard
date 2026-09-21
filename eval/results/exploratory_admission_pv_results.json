@@ -1,6 +1,6 @@
 {
   "status": "EXPLORATORY",
-  "selected_beta": 40.0,
+  "selected_beta": 160.0,
   "tuning_seeds": "1..20 (DEV_SEEDS)",
   "evaluation_seeds": "251..300",
   "seed_count": 50,
@@ -81,7 +81,7 @@
         "completed_runs": 31.9,
         "wait_ticks": 0.047
       },
-      "Admission-PV (Exploratory beta=40.0)": {
+      "Admission-PV (Exploratory beta=160.0)": {
         "wasted_token_ratio": {
           "mean": 0.0009,
           "ci_95": [
@@ -175,27 +175,27 @@
         "completed_runs": 58.44,
         "wait_ticks": 0.167
       },
-      "Admission-PV (Exploratory beta=40.0)": {
+      "Admission-PV (Exploratory beta=160.0)": {
         "wasted_token_ratio": {
-          "mean": 0.0043,
+          "mean": 0.0038,
           "ci_95": [
-            0.002,
-            0.0066
+            0.0016,
+            0.006
           ],
           "paired_diff_vs_fifo": [
-            -0.0151,
-            -0.0201,
-            -0.0102
+            -0.0156,
+            -0.0208,
+            -0.0105
           ],
           "paired_diff_vs_admission_only": [
-            0.0009,
-            -0.0009,
-            0.0026
+            0.0004,
+            -0.0015,
+            0.0023
           ]
         },
-        "failure_rate": 0.165,
-        "late_fail_count": 0.34,
-        "completed_runs": 57.5,
+        "failure_rate": 0.1684,
+        "late_fail_count": 0.3,
+        "completed_runs": 57.44,
         "wait_ticks": 0.171
       }
     },
@@ -269,28 +269,28 @@
         "completed_runs": 71.92,
         "wait_ticks": 0.328
       },
-      "Admission-PV (Exploratory beta=40.0)": {
+      "Admission-PV (Exploratory beta=160.0)": {
         "wasted_token_ratio": {
-          "mean": 0.0043,
+          "mean": 0.0041,
           "ci_95": [
             0.0023,
-            0.0064
+            0.0058
           ],
           "paired_diff_vs_fifo": [
-            -0.0301,
-            -0.0352,
-            -0.025
+            -0.0303,
+            -0.0354,
+            -0.0252
           ],
           "paired_diff_vs_admission_only": [
-            -0.0009,
-            -0.0036,
-            0.0019
+            -0.0011,
+            -0.0035,
+            0.0012
           ]
         },
-        "failure_rate": 0.2631,
-        "late_fail_count": 0.4,
-        "completed_runs": 70.4,
-        "wait_ticks": 0.348
+        "failure_rate": 0.2672,
+        "late_fail_count": 0.38,
+        "completed_runs": 70.28,
+        "wait_ticks": 0.355
       }
     },
     "0.85": {
@@ -363,28 +363,28 @@
         "completed_runs": 80.0,
         "wait_ticks": 0.498
       },
-      "Admission-PV (Exploratory beta=40.0)": {
+      "Admission-PV (Exploratory beta=160.0)": {
         "wasted_token_ratio": {
-          "mean": 0.0051,
+          "mean": 0.0031,
           "ci_95": [
-            0.0027,
-            0.0075
+            0.0016,
+            0.0046
           ],
           "paired_diff_vs_fifo": [
-            -0.0401,
-            -0.0474,
-            -0.0328
+            -0.0421,
+            -0.0491,
+            -0.0352
           ],
           "paired_diff_vs_admission_only": [
-            -0.0011,
-            -0.0043,
-            0.0021
+            -0.0031,
+            -0.0056,
+            -0.0006
           ]
         },
-        "failure_rate": 0.323,
-        "late_fail_count": 0.5,
-        "completed_runs": 78.84,
-        "wait_ticks": 0.536
+        "failure_rate": 0.3281,
+        "late_fail_count": 0.3,
+        "completed_runs": 78.34,
+        "wait_ticks": 0.54
       }
     }
   }

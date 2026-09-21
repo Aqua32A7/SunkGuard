@@ -135,12 +135,15 @@ class Workflow:
     noise: float = 0.0
 
     born_tick: int = 0
+    step_requested_tick: int = 0
     started_tick: int = -1
     end_tick: int = -1
 
     observed_history: List[Dict[str, Any]] = field(default_factory=list)
 
     no_reservation_until: int = 0
+    backoff_until: int = 0
+    retry_attempts: int = 0
     reservation_logged: bool = False
     demo_tag: str = ""
 

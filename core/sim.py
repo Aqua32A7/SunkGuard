@@ -85,7 +85,9 @@ class SimulationEngine:
             )
         else:
             self.controller = BaselineController(
-                rng=self.rng, policy=config.policy
+                rng=self.rng,
+                policy=config.policy,
+                variant=config.variant,
             )
 
         # Simulation clock and state
@@ -181,6 +183,7 @@ class SimulationEngine:
             total_planned_tokens=total_tokens,
             noise=noise,
             born_tick=self.tick_count,
+            step_requested_tick=self.tick_count,
             demo_tag=demo_tag,
         )
 
@@ -352,6 +355,9 @@ class SimulationEngine:
                     wf.running_ticks_left = 0
                     wf.wait_time = 0
                     wf.state = "waiting"
+                    wf.step_requested_tick = tick
+                    wf.backoff_until = 0
+                    wf.retry_attempts = 0
 
                     if wf.step_index >= len(wf.steps):
                         self._on_workflow_terminal(wf, "done")

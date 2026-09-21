@@ -337,36 +337,45 @@ The demo and presentation lead with the honest scientific narrative:
 ## 11. Pre-Registration: Step 2 Regime Test (Window-Indexed Budgets & Non-Preemptible Steps)
 
 **Pre-Registration Status:** Pre-Registered Prior to Simulation Execution  
-**Registration Timestamp:** 2026-09-22T01:10:00Z  
+**Registration Timestamp:** 2026-09-22T01:22:00Z  
 **Evaluation Seeds:** Strictly unseen seeds 301–400 ($n=100$ seeds).  
 **Frozen Git Tag:** `thesis-regime-test-frozen` (Tag will be placed before execution and NEVER moved).  
 **Time-Box:** 3 hours.
 
-### 11.1 Problem & Environmental Regime
-To test whether advance reservations can be proven effective under extreme structural constraints where reactive queueing suffers from late-chain starvation, Step 2 introduces two new architectural conditions:
+### 11.1 Problem & Environmental Regime Specification
+> [!IMPORTANT]
+> **Deliberate Design Bias Disclosure:** This regime is structurally engineered to explicitly favor advance reservations over reactive queueing. By imposing non-preemptible multi-tick execution ($d \ge 8\text{t}$) and rigid per-window token limits with zero carry-over, reactive queueing is exposed to late-chain starvation at window boundaries. 
+
 1. **Per-Window Token-Rate-Limit Resource (TPM Bucket):**
-   - Fixed time windows ($W_{\text{size}} = 20\text{ ticks}$).
-   - Strict token budget per window ($B_{\text{window}}$) with **no carry-over** across window boundaries.
-   - Fixed refill at $t \equiv 0 \pmod{W_{\text{size}}}$.
+   - Fixed time window: $W_{\text{size}} = 20\text{ ticks}$.
+   - Token budget per window: $B_{\text{window}} = 8,000\text{ tokens}$, strictly refilling at $t \equiv 0 \pmod{20}$ with **no carry-over**.
 2. **Non-Preemptible Long Steps:**
-   - Steps once allocated run to completion without preemption ($d \ge 8\text{ ticks}$), tying up window budget.
+   - Critical path bottleneck steps run non-preemptibly for $d = 8\text{ ticks}$ consuming 2,500 tokens.
 3. **Branching Workflow DAG Generator:**
-   - Workflows follow multi-path DAG branches per template with empirical transition probabilities ($P(s_{j+1} \mid s_j)$), rather than static linear chains.
+   - Multi-path DAG transitions per template with real transition probabilities ($P(s_{j+1} \mid s_j)$).
+4. **Evaluated Loads:** Fixed at $\lambda \in [0.50, 0.70, 0.85]$. Note: load 0.25 is excluded as **underpowered (< 30 baseline late failures)**.
+5. **Control Regime (Where Reservations Should NOT Help):**
+   - Continuous unwindowed capacity with short step durations ($d \le 2\text{ ticks}$).
 
-### 11.2 Controller Variants Evaluated
+### 11.2 Controller Variants & Equal Dev Tuning Budget
+To prevent tuning bias, each parametric variant is evaluated with an identical budget of 7 candidate grid evaluations exclusively on dev seeds 1–20:
 1. **`Baseline`:** Uncoordinated random dispatch with patience timeouts.
-2. **`FIFO`:** Disciplined queueing by arrival order without progress bias or reservations.
-3. **`Admission-Only`:** Progress-weighted priority queue with wait aging, zero reservations.
-4. **`Admission-PV`:** Protection-value queue ($W_{\text{done}} / (\epsilon + \hat{C}_{\text{rem}})$), zero reservations.
-5. **`Admission-Headroom` (New No-Prediction Control):** Admits new workflows to step 0 only if the remaining token budget in the current window satisfies:
-   $$\text{Budget}_{\text{rem}} \ge h \cdot \bar{C}_{\text{chain}}$$
-   where $h$ is headroom multiplier and $\bar{C}_{\text{chain}}$ is the average template token cost.
-6. **`Full SunkGuard (Window-Indexed Reservations)`:** Non-oracle predictor + window-indexed reservations reserving tokens in downstream target windows + progress-weighted queueing + aging.
+2. **`Baseline-Backoff`:** Distributed retries with exponential jittered backoff.
+3. **`Oldest-First`:** Strict arrival-order queueing (`wf.born_tick`).
+4. **`FIFO-Request`:** Strict request-arrival queueing (`wf.step_requested_tick`).
+5. **`Admission-Only`:** Progress-weighted queue + aging, zero reservations.
+6. **`Admission-PV`:** Protection-value queue ($W_{\text{done}} / (\epsilon + \hat{C}_{\text{rem}})$), $\beta$ tuned on dev seeds 1–20 across 7 grid points, zero reservations.
+7. **`Admission-Headroom` (No-Prediction Control):** Admits new workflows to step 0 only if remaining window budget $\ge h \cdot \bar{C}_{\text{chain}}$, with $h \in \{0.5, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5\}$ tuned on dev seeds 1–20 (7 grid points).
+8. **`Full SunkGuard (Window-Indexed Reservations)`:** Window-indexed advance reservations + progress weighting + aging, tuned across 7 reservation threshold grid points on dev seeds 1–20.
 
-### 11.3 Formal Acceptance Criterion
-Full SunkGuard is judged successful if and only if:
-1. **Relative Waste Reduction:** Full SunkGuard beats the **best non-reservation variant** (the minimum of `FIFO`, `Admission-Only`, `Admission-PV`, and `Admission-Headroom`) by $\ge 20.0\%$ relative on wasted tokens:
+### 11.3 Formal Acceptance Criterion & Non-Inferiority Guard
+Full SunkGuard is judged successful if and only if all of the following hold:
+1. **Relative Waste Reduction:** Full SunkGuard beats the **best non-reservation variant** (min of `Oldest-First`, `FIFO-Request`, `Admission-Only`, `Admission-PV`, `Admission-Headroom`) by $\ge 20.0\%$ relative on wasted tokens:
    $$\frac{\text{Waste}_{\text{best\_no\_rsv}} - \text{Waste}_{\text{full}}}{\text{Waste}_{\text{best\_no\_rsv}}} \ge 0.20$$
-2. **Statistical Significance:** Paired 95% confidence interval of absolute token waste reduction strictly excludes zero and favors Full SunkGuard ($\text{CI}_{\text{lower}} > 0.0$).
-3. **Wait Ceiling:** Full SunkGuard new work wait ratio vs Baseline satisfies $\bar{W}_{\text{full}} / \bar{W}_{\text{base}} < 2.00\text{x}$.
-4. **Load Generalization:** Conditions (1)-(3) must be satisfied at $\ge 2$ out of 3 evaluated load levels that exhibit substantial contention ($\ge 30$ baseline failures per 100 runs).
+2. **Statistical Significance:** Paired 95% CI of absolute token waste reduction strictly excludes zero and favors Full SunkGuard ($\text{CI}_{\text{lower}} > 0.0$).
+3. **Non-Inferiority Guard (Completed Runs & Total Failures):**
+   - Full's completed runs must not be significantly worse than the best non-reservation variant (paired 95% CI lower bound $\ge -1.0$ run).
+   - Full's overall failure rate must not be significantly worse than the best non-reservation variant (paired 95% CI upper bound $\le +1.5\%$).
+4. **Wait Ceiling:** Full SunkGuard new work wait ratio vs Baseline satisfies $\bar{W}_{\text{full}} / \bar{W}_{\text{base}} < 2.00\text{x}$.
+5. **Goodput Reporting:** Goodput (completed tokens per simulation run) is reported alongside wasted-token ratio for all variants.
+6. **Load Generalization:** Criteria (1)–(4) must hold at $\ge 2$ of 3 evaluated loads ($\lambda \in [0.50, 0.70, 0.85]$).

@@ -18,6 +18,9 @@ from core.workflow import Workflow, Step
 ControllerPolicy = Literal["light", "medium", "aggressive"]
 ControllerVariant = Literal[
     "fifo",
+    "oldest_first",
+    "fifo_request",
+    "baseline_backoff",
     "aging_only",
     "progress_only",
     "admission_only",
@@ -110,7 +113,14 @@ class BaseController(ABC):
 
 
 class BaselineController(BaseController):
-    """Uncoordinated FIFO/Random baseline scheduler without reservations or sunk-cost bias."""
+    """Uncoordinated FIFO/Random baseline scheduler without reservations or sunk-cost bias.
+    
+    Supports pure uncoordinated stampede dispatch or distributed retry with jittered backoff.
+    """
+
+    def __init__(self, rng: SeededRNG, policy: ControllerPolicy = "medium", variant: str = "uncoordinated"):
+        super().__init__(rng, policy)
+        self.variant = variant
 
     def plan(self, tick: int, active_workflows: List[Workflow], rm: ResourceManager) -> None:
         # Baseline performs no predictive planning or reservations
@@ -125,8 +135,13 @@ class BaselineController(BaseController):
         on_failed: Optional[callable] = None,
     ) -> None:
         cfg = self.policy_config
-        # Randomized scheduling order among eligible pending workflows (seeded RNG)
-        queue = list(candidates)
+        # If backoff enabled, only schedule candidates whose backoff timer has elapsed
+        if self.variant == "baseline_backoff":
+            eligible = [w for w in candidates if w.backoff_until <= tick]
+        else:
+            eligible = list(candidates)
+
+        queue = list(eligible)
         self.rng.shuffle(queue)
 
         for wf in queue:
@@ -141,6 +156,8 @@ class BaselineController(BaseController):
                 wf.running_step = step
                 wf.running_ticks_left = step.duration
                 wf.state = "running"
+                wf.backoff_until = 0
+                wf.retry_attempts = 0
                 if wf.started_tick < 0:
                     wf.started_tick = tick
                     if on_started:
@@ -150,6 +167,13 @@ class BaselineController(BaseController):
                 wf.wait_time += 1
                 wf.total_wait_time += 1
                 wf.state = "queued" if (wf.step_index == 0 and wf.started_tick < 0) else "waiting"
+
+                # Jittered exponential backoff if enabled
+                if self.variant == "baseline_backoff":
+                    wf.retry_attempts += 1
+                    base_delay = min(8, 2 ** min(wf.retry_attempts, 3))
+                    jitter = self.rng.randrange(0, base_delay + 1)
+                    wf.backoff_until = tick + jitter
 
                 # Check patience exhaustion
                 if wf.step_index > 0 and wf.wait_time > cfg.pat:
@@ -250,8 +274,8 @@ class SunkGuardController(BaseController):
 
     def plan(self, tick: int, active_workflows: List[Workflow], rm: ResourceManager) -> None:
         """Periodic reservation management cycle."""
-        # Ablation variants without reservations: admission_only, fifo, aging_only, progress_only, admission_pv
-        if self.variant in ("admission_only", "fifo", "aging_only", "progress_only", "admission_pv"):
+        # Ablation variants without reservations: admission_only, fifo, oldest_first, fifo_request, aging_only, progress_only, admission_pv
+        if self.variant in ("admission_only", "fifo", "oldest_first", "fifo_request", "aging_only", "progress_only", "admission_pv"):
             self.reservations = []
             self._sync_resource_reservation_tallies(rm)
             return
@@ -388,8 +412,8 @@ class SunkGuardController(BaseController):
 
         # Calculate dynamic priority scores according to ablation variant
         for wf in candidates:
-            if self.variant == "fifo":
-                # FIFO: no aging, no progress
+            if self.variant in ("fifo", "oldest_first", "fifo_request"):
+                # No aging, no progress
                 aging_boost = 0.0
                 sunk_boost = 0.0
             elif self.variant in ("aging_only", "prediction_reservation", "pred_rsv_no_prog"):
@@ -421,8 +445,15 @@ class SunkGuardController(BaseController):
                 sunk_boost = cfg.weight * (wf.spent_work / 1000.0)
             wf.score = wf.base_priority + aging_boost + sunk_boost
 
-        # Sort by score descending with deterministic arrival tie-breaking
-        queue = sorted(candidates, key=lambda w: (w.score, -w.born_tick, -w.id), reverse=True)
+        # Sort according to variant
+        if self.variant == "fifo_request":
+            # Earliest step request time first
+            queue = sorted(candidates, key=lambda w: (w.step_requested_tick, w.id))
+        elif self.variant in ("fifo", "oldest_first"):
+            # Earliest workflow birth time first
+            queue = sorted(candidates, key=lambda w: (w.born_tick, w.id))
+        else:
+            queue = sorted(candidates, key=lambda w: (w.score, -w.born_tick, -w.id), reverse=True)
 
         for wf in queue:
             step = wf.current_step

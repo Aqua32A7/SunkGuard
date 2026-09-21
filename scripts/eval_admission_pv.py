@@ -50,7 +50,7 @@ def compute_paired_ci(a: List[float], b: List[float]) -> Tuple[float, float, flo
 
 def tune_beta_on_dev_seeds(
     predictor,
-    candidate_betas: List[float] = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 40.0],
+    candidate_betas: List[float] = [5.0, 10.0, 20.0, 40.0, 60.0, 80.0, 120.0, 160.0, 240.0, 320.0],
     dev_seeds: List[int] = DEV_SEEDS,
     loads: List[float] = [0.25, 0.50, 0.70],
     ticks: int = 150,
@@ -190,6 +190,20 @@ def run_exploratory_evaluation(
             wait_str = f"{d['wait_ticks']:.2f}t"
             print(f"{lbl:<42} | {w_str:<16} | {f_str:<10} | {lf_str:<10} | {done_str:<8} | {wait_str:<8}")
         print("-" * len(header))
+
+        # Direct paired test: Admission-PV vs Admission-Only
+        pv_label = f"Admission-PV (Exploratory beta={best_beta})"
+        adm_label = "Admission-Only (Production)"
+        diff_w, diff_w_l, diff_w_u, sig_w = compute_paired_ci(raw[pv_label]["wasted"], raw[adm_label]["wasted"])
+        diff_f, diff_f_l, diff_f_u, sig_f = compute_paired_ci(raw[pv_label]["fail"], raw[adm_label]["fail"])
+        diff_d, diff_d_l, diff_d_u, sig_d = compute_paired_ci(raw[pv_label]["done"], raw[adm_label]["done"])
+        diff_lf, diff_lf_l, diff_lf_u, sig_lf = compute_paired_ci(raw[pv_label]["late_cnt"], raw[adm_label]["late_cnt"])
+
+        print(f"Paired Test: Admission-PV vs Admission-Only (Δ = PV - Admission-Only):")
+        print(f"  Δ Wasted Tok Ratio: {diff_w*100:+.3f}% [95% CI: {diff_w_l*100:+.3f}%, {diff_w_u*100:+.3f}%] (Significant: {sig_w})")
+        print(f"  Δ Failure Rate:     {diff_f*100:+.2f}% [95% CI: {diff_f_l*100:+.2f}%, {diff_f_u*100:+.2f}%] (Significant: {sig_f})")
+        print(f"  Δ Completed Runs:   {diff_d:+.2f} [95% CI: {diff_d_l:+.2f}, {diff_d_u:+.2f}] (Significant: {sig_d})")
+        print(f"  Δ Late Failures:    {diff_lf:+.2f} [95% CI: {diff_lf_l:+.2f}, {diff_lf_u:+.2f}] (Significant: {sig_lf})")
 
     out_file = Path(__file__).resolve().parent.parent / "eval" / "results" / "exploratory_admission_pv_results.json"
     out_file.parent.mkdir(parents=True, exist_ok=True)
