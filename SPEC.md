@@ -236,13 +236,19 @@ All interactive demonstrations, CLI summaries, and validation outputs must repor
 
 ### 8.7 Post-Hoc Declared Deviation & Protocol Disclosure: Gate 3 Freeze Tag Retargeting
 **Registration Status:** Post-Hoc Integrity Disclosure  
-**Entry Timestamp:** 2026-09-22T01:05:00Z  
+**Entry Timestamp:** 2026-09-22T01:16:00Z  
 **Disclosure Context:**
 1. The git tag `thesis-gate3-frozen` was initially attached to commit `8fd4059` alongside the initial draft of `scripts/eval_gate3.py`.
-2. Prior to executing the ablation sweep, code review revealed an unpacking bug in `scripts/eval_gate3.py` (line 181: `pred_hit_m, _, _ = compute_ci(raw["pred_hit"])` while line 230 referenced undefined variables `pred_hit_l` and `pred_hit_u`).
-3. **Execution History on Seeds 151–250:** Commit `8fd4059` was **never executed** on seeds 151–250. Because the script contained this fatal `NameError`, zero simulations were completed, and zero outputs or preliminary results were seen or logged on seeds 151–250 prior to the rewrite.
-4. **Tag Retargeting:** The script was updated at commit `829f45e` to correct variable unpacking, add paired 95% confidence intervals against baseline across all metrics, and enforce strict git integrity checks. The tag `thesis-gate3-frozen` was force-moved to commit `829f45e`, under which the single authoritative ablation evaluation was subsequently executed.
-5. **Frozen Protocol Rule:** To eliminate any ambiguity in scientific versioning, **no git tag may ever be moved or overwritten again**. Any subsequent changes or regime tests must use distinct, newly minted tag names (e.g., `thesis-step2-regime-frozen`).
+2. **Execution History at Commit `8fd4059`:** At 2026-09-22T00:52:39+05:30, `python3 scripts/eval_gate3.py` was launched under commit `8fd4059`. The simulation loop completed for the first load level (load 0.25). However, during post-simulation metric aggregation prior to printing or saving any results, the script crashed at line 230 with exit code 1:
+   ```text
+   File "scripts/eval_gate3.py", line 230, in run_gate3_evaluation
+     "ci_95": [round(pred_hit_l, 4), round(pred_hit_u, 4)],
+                     ^^^^^^^^^^
+   NameError: name 'pred_hit_l' is not defined. Did you mean: 'pred_hit_m'?
+   ```
+   Because execution aborted at line 230, **zero tables or summary metrics were formatted or printed**, **no simulation sweeps were executed for loads 0.50 or 0.70**, and **zero files were written** (`gate3_results.json` was never created by this run).
+3. **Tag Retargeting:** The script was updated at commit `829f45e` to unpack all CI variables, add paired 95% confidence intervals against baseline across all metrics, and enforce strict git integrity checks. Tag `thesis-gate3-frozen` was force-moved to commit `829f45e`, and the complete evaluation across loads [0.25, 0.50, 0.70] was executed once.
+4. **Frozen Protocol Rule:** To eliminate any ambiguity in scientific versioning, **no git tag may ever be moved or overwritten again**. Any subsequent changes or regime tests must use distinct, newly minted tag names (e.g., `thesis-regime-test-frozen`).
 
 ---
 
