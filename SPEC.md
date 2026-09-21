@@ -234,6 +234,16 @@ All interactive demonstrations, CLI summaries, and validation outputs must repor
 - **Reasoning & Value Selection ($\rho \le 0.40$):** In Phase 1 held-out testing at load 0.25, SunkGuard exhibited an anomalous failure rate spike (5.4% vs 3.5% baseline). Root-cause analysis revealed that reserving 4–5 units of Gemini Pro (capacity 7) for a late-stage run left only 2–3 units free. Newly arriving workflows requiring bursts of Pro timed out waiting for capacity that was physically idle but logically locked. The threshold $\rho \le 0.40$ was chosen because below 40% load, unreserved FIFO scheduling experiences almost zero structural queuing; locking capacity in an idle system causes purely self-inflicted starvation.
 - **Measured Impact:** Contention gating significantly **reduced** the low-load failure rate from 5.4% down to 4.1% [95% CI: 2.8%, 5.4%], but did **not** eliminate the gap relative to baseline (3.5% [2.4%, 4.6%]).
 
+### 8.7 Post-Hoc Declared Deviation & Protocol Disclosure: Gate 3 Freeze Tag Retargeting
+**Registration Status:** Post-Hoc Integrity Disclosure  
+**Entry Timestamp:** 2026-09-22T01:05:00Z  
+**Disclosure Context:**
+1. The git tag `thesis-gate3-frozen` was initially attached to commit `8fd4059` alongside the initial draft of `scripts/eval_gate3.py`.
+2. Prior to executing the ablation sweep, code review revealed an unpacking bug in `scripts/eval_gate3.py` (line 181: `pred_hit_m, _, _ = compute_ci(raw["pred_hit"])` while line 230 referenced undefined variables `pred_hit_l` and `pred_hit_u`).
+3. **Execution History on Seeds 151–250:** Commit `8fd4059` was **never executed** on seeds 151–250. Because the script contained this fatal `NameError`, zero simulations were completed, and zero outputs or preliminary results were seen or logged on seeds 151–250 prior to the rewrite.
+4. **Tag Retargeting:** The script was updated at commit `829f45e` to correct variable unpacking, add paired 95% confidence intervals against baseline across all metrics, and enforce strict git integrity checks. The tag `thesis-gate3-frozen` was force-moved to commit `829f45e`, under which the single authoritative ablation evaluation was subsequently executed.
+5. **Frozen Protocol Rule:** To eliminate any ambiguity in scientific versioning, **no git tag may ever be moved or overwritten again**. Any subsequent changes or regime tests must use distinct, newly minted tag names (e.g., `thesis-step2-regime-frozen`).
+
 ---
 
 ## 9. Phase 2 Architecture: Non-Oracle Predictor & Controller Ablations
