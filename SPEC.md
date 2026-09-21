@@ -320,8 +320,47 @@ The demo and presentation lead with the honest scientific narrative:
 
 ## 10. Architectural Decisions & Scope
 
-1. **No React / Vite:** The frontend dashboard remains a zero-dependency vanilla HTML/CSS/JS application (`dashboard/index.html`), deployable statically or served by FastAPI.
+1. **Frontend Architecture:** The primary dashboard is built with React 19 and Vite (`src/`, `components/`, `views/`), served via Vite dev server or production build, and connected to the backend via REST API (`/api/`) and Server-Sent Events (`/api/stream`). The standalone HTML dashboard (`dashboard/index.html`) is preserved strictly as an offline demonstration fallback.
 2. **Offline Simulator Fallback:** The standalone in-browser simulation engine inside `dashboard/index.html` is preserved for zero-backend offline demonstration.
-3. **SSE Over WebSockets:** Server-Sent Events (`text/event-stream`) is the standard real-time communication protocol between backend and dashboard.
+3. **SSE Over WebSockets:** Server-Sent Events (`text/event-stream`) is the standard real-time telemetry protocol between backend and frontend.
 4. **No Pitch-Deck Modal:** UI focuses exclusively on orchestration, live telemetry, workflow inspection, and cost analysis.
 5. **API Key & Cap Guardrails:** `.env` configures `GEMINI_API_KEY`, bounded by strict `GEMINI_CALL_CAP` and `GEMINI_TOKEN_CAP` limits.
+
+---
+
+## 11. Pre-Registration: Step 2 Regime Test (Window-Indexed Budgets & Non-Preemptible Steps)
+
+**Pre-Registration Status:** Pre-Registered Prior to Simulation Execution  
+**Registration Timestamp:** 2026-09-22T01:10:00Z  
+**Evaluation Seeds:** Strictly unseen seeds 301–400 ($n=100$ seeds).  
+**Frozen Git Tag:** `thesis-regime-test-frozen` (Tag will be placed before execution and NEVER moved).  
+**Time-Box:** 3 hours.
+
+### 11.1 Problem & Environmental Regime
+To test whether advance reservations can be proven effective under extreme structural constraints where reactive queueing suffers from late-chain starvation, Step 2 introduces two new architectural conditions:
+1. **Per-Window Token-Rate-Limit Resource (TPM Bucket):**
+   - Fixed time windows ($W_{\text{size}} = 20\text{ ticks}$).
+   - Strict token budget per window ($B_{\text{window}}$) with **no carry-over** across window boundaries.
+   - Fixed refill at $t \equiv 0 \pmod{W_{\text{size}}}$.
+2. **Non-Preemptible Long Steps:**
+   - Steps once allocated run to completion without preemption ($d \ge 8\text{ ticks}$), tying up window budget.
+3. **Branching Workflow DAG Generator:**
+   - Workflows follow multi-path DAG branches per template with empirical transition probabilities ($P(s_{j+1} \mid s_j)$), rather than static linear chains.
+
+### 11.2 Controller Variants Evaluated
+1. **`Baseline`:** Uncoordinated random dispatch with patience timeouts.
+2. **`FIFO`:** Disciplined queueing by arrival order without progress bias or reservations.
+3. **`Admission-Only`:** Progress-weighted priority queue with wait aging, zero reservations.
+4. **`Admission-PV`:** Protection-value queue ($W_{\text{done}} / (\epsilon + \hat{C}_{\text{rem}})$), zero reservations.
+5. **`Admission-Headroom` (New No-Prediction Control):** Admits new workflows to step 0 only if the remaining token budget in the current window satisfies:
+   $$\text{Budget}_{\text{rem}} \ge h \cdot \bar{C}_{\text{chain}}$$
+   where $h$ is headroom multiplier and $\bar{C}_{\text{chain}}$ is the average template token cost.
+6. **`Full SunkGuard (Window-Indexed Reservations)`:** Non-oracle predictor + window-indexed reservations reserving tokens in downstream target windows + progress-weighted queueing + aging.
+
+### 11.3 Formal Acceptance Criterion
+Full SunkGuard is judged successful if and only if:
+1. **Relative Waste Reduction:** Full SunkGuard beats the **best non-reservation variant** (the minimum of `FIFO`, `Admission-Only`, `Admission-PV`, and `Admission-Headroom`) by $\ge 20.0\%$ relative on wasted tokens:
+   $$\frac{\text{Waste}_{\text{best\_no\_rsv}} - \text{Waste}_{\text{full}}}{\text{Waste}_{\text{best\_no\_rsv}}} \ge 0.20$$
+2. **Statistical Significance:** Paired 95% confidence interval of absolute token waste reduction strictly excludes zero and favors Full SunkGuard ($\text{CI}_{\text{lower}} > 0.0$).
+3. **Wait Ceiling:** Full SunkGuard new work wait ratio vs Baseline satisfies $\bar{W}_{\text{full}} / \bar{W}_{\text{base}} < 2.00\text{x}$.
+4. **Load Generalization:** Conditions (1)-(3) must be satisfied at $\ge 2$ out of 3 evaluated load levels that exhibit substantial contention ($\ge 30$ baseline failures per 100 runs).
