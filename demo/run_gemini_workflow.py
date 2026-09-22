@@ -114,7 +114,8 @@ WORKFLOW_SCENARIOS = [
 
 def run_and_record_traces() -> Dict[str, Any]:
     adapter = GeminiProviderAdapter()
-    client = SunkGuardClient(in_memory=True)
+    # Connects to live server (http://localhost:8000) if online, else falls back to in-memory
+    client = SunkGuardClient()
 
     print(f"Starting Gemini workflow execution (Live API: {adapter.is_configured}, Model: {adapter.model})...")
     print(f"Call Cap: {adapter.call_cap}, Token Cap: {adapter.token_cap}")
