@@ -5,7 +5,7 @@
 
 **SunkGuard** is a predictive admission controller and resource reservation engine designed to eliminate **late-stage cascading failures** in multi-step compound AI systems (e.g., chains of LLM calls, vector DB lookups, tool executions, and external API requests).
 
-Under naive or FIFO scheduling, workflows that have already completed 70–90% of their steps often fail due to sudden downstream contention, destroying all previously invested compute, tokens, and latency. SunkGuard estimates the **marginal failure probability reduction** ($\Delta P_{\text{failure}}$) and prioritizes high-investment workflows with **hard and soft resource reservations** while protecting new workflows against starvation via an **aging queue**.
+Under naive or FIFO scheduling, workflows that have already completed 70–90% of their steps often fail due to sudden downstream contention, destroying all previously invested compute, tokens, and latency. SunkGuard estimates the **marginal failure probability reduction** ($\Delta P_{\text{failure}}$) and prioritizes high-investment workflows with **hard and soft resource reservations** while dynamically balancing in-flight progress against queue wait time via a **deadline-aware priority aging queue**.
 
 ---
 
@@ -35,11 +35,11 @@ $$w_i = u_i \cdot \kappa(r_i)$$
 ### 3. Late Failure Definition
 - **Late Failure:** A workflow entering terminal state `failed` having completed **$\ge 50\%$ of its total planned work** ($W_{\text{done}} / W_{\text{total}} \ge 0.50$).
 - **Early Failure:** Failed with $0 < W_{\text{done}} / W_{\text{total}} < 0.50$.
-- **Starvation:** Dropped in the admission queue before step 0 begins execution ($W_{\text{done}} = 0$).
+- **Admission Queue Timeout:** Dropped in the initial queue before step 0 begins execution ($W_{\text{done}} = 0$).
 
-### 4. Dynamic Priority Function with Aging
+### 4. Dynamic Priority Function with Deadline-Aware Aging
 $$\text{Score}(W, t) = \text{base}_W + \alpha_{\text{aging}} \cdot \text{wait}(W, t) + \beta_{\text{sunk}} \cdot \left(\frac{W_{\text{done}}(W)}{1000}\right)$$
-The aging term ($\alpha_{\text{aging}} = 0.35$) steadily raises priority for waiting jobs, mathematically bounding waiting time and preventing starvation.
+The aging term ($\alpha_{\text{aging}} = 0.35$) provides deadline-aware priority, raising the effective scheduling score as waiting time elapses relative to the patience timeout.
 
 ---
 
@@ -197,7 +197,7 @@ Simulation ticks are calibrated to wall-clock seconds using empirical step laten
 Across fresh held-out seeds 151–250 (100 seeds):
 1. **Admission-Only is the dominant performer:** Progress-weighted queueing with wait aging ($\alpha = 0.35$) cuts wasted tokens from 3.07% to 0.43% at load 0.50 (an 86% relative reduction) and from 5.51% to 0.50% at load 0.70 (a 91% relative reduction), while reducing overall failures and increasing completed runs.
 2. **Advance reservations add delay without benefit:** Full predictive reservations (`Full SunkGuard`) do not outperform reactive progress queueing (`Admission-Only`), introducing artificial reservation delay ($2.52\times$ baseline wait) without reducing token waste.
-3. **Starvation aging is mathematically necessary:** Disabling wait aging (`Progress-Only`) causes low-progress workflows to starve at the queue head under high load ($\lambda = 0.85$), increasing token waste and failure rates.
+3. **Deadline-aware priority aging provides tail coordination:** Wait aging ($\alpha = 0.35$) increases effective urgency as waiting time accrues toward patience timeouts. Disabling aging (`Progress-Only`) suppresses early-stage steps during heavy downstream contention, elevating failure rates. Empirical data shows zero step-0 dropouts across all loads because queue patience ($QPAT = 28\text{t}$) greatly exceeds p95 wait; thus aging functions as a deadline-aware prioritization mechanism rather than an active anti-starvation gate.
 
 ---
 

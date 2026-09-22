@@ -1,8 +1,9 @@
-"""Concurrent Gemini Workflow Test comparing oldest_first vs admission_only on real tokens.
+"""Smoke Test: Concurrent Gemini Workflow Connectivity & Non-Contended Baseline.
 
-Executes a concurrent batch of 6-8 workflows with strict self-imposed guardrails
-(<= 16 API calls, max 40 tokens per call) to measure real token usage, latency,
-and throughput under contention, verifying that traces contain zero secrets.
+Executes a concurrent batch of 6 workflows with strict self-imposed guardrails
+(<= 16 API calls, max 40 tokens per call) to verify API connectivity, end-to-end
+runtime integration, and trace sanitization under unconstrained baseline conditions.
+For true rate-limited budget contention, see demo/test_gemini_contention.py.
 """
 
 import concurrent.futures

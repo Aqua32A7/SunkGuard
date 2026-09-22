@@ -74,9 +74,12 @@ class ControllerLogEntry:
 class BaseController(ABC):
     """Abstract interface for workflow admission and resource scheduling."""
 
-    def __init__(self, rng: SeededRNG, policy: ControllerPolicy = "medium"):
+    def __init__(self, rng: SeededRNG, policy: ControllerPolicy = "medium", pat_override: Optional[int] = None):
         self.rng = rng
         self.policy_config = POLICIES[policy]
+        if pat_override is not None:
+            from dataclasses import replace
+            self.policy_config = replace(self.policy_config, pat=pat_override)
         self.log: List[ControllerLogEntry] = []
 
     def add_log(self, tick: int, message: str, kind: Literal["ok", "warn", "bad", "rsv", "ttl"] = "ok") -> None:
@@ -118,8 +121,14 @@ class BaselineController(BaseController):
     Supports pure uncoordinated stampede dispatch or distributed retry with jittered backoff.
     """
 
-    def __init__(self, rng: SeededRNG, policy: ControllerPolicy = "medium", variant: str = "uncoordinated"):
-        super().__init__(rng, policy)
+    def __init__(
+        self,
+        rng: SeededRNG,
+        policy: ControllerPolicy = "medium",
+        variant: str = "uncoordinated",
+        pat_override: Optional[int] = None,
+    ):
+        super().__init__(rng, policy, pat_override=pat_override)
         self.variant = variant
 
     def plan(self, tick: int, active_workflows: List[Workflow], rm: ResourceManager) -> None:
@@ -210,8 +219,9 @@ class SunkGuardController(BaseController):
         variant: ControllerVariant = "admission_only",
         predictor: Optional[NonOraclePredictor] = None,
         beta_pv: float = 1.0,
+        pat_override: Optional[int] = None,
     ):
-        super().__init__(rng, policy)
+        super().__init__(rng, policy, pat_override=pat_override)
         self.variant: ControllerVariant = variant
         self.beta_pv = beta_pv
         if predictor is not None:

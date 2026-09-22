@@ -135,6 +135,7 @@ class RegimeSimulationEngine:
         variant: str = "admission_only",
         policy: str = "medium",
         headroom_factor: float = 1.0,
+        aging_rate: float = 0.35,
     ):
         from core.sim import SeededRNG
         self.seed = seed
@@ -143,6 +144,7 @@ class RegimeSimulationEngine:
         self.variant = variant
         self.policy = policy
         self.headroom_factor = headroom_factor
+        self.aging_rate = aging_rate
 
         self.rng = SeededRNG(seed)
         self.tpm_bucket = WindowedTokenBucket()
@@ -260,14 +262,14 @@ class RegimeSimulationEngine:
             elif self.variant == "admission_only":
                 # Progress weighting + aging: score = base_priority + beta * spent_work + wait_time * aging
                 for w in candidates:
-                    w.score = w.base_priority + 0.35 * w.spent_work + (w.wait_time * 0.16)
+                    w.score = w.base_priority + 0.35 * w.spent_work + (w.wait_time * self.aging_rate)
                 queue = sorted(candidates, key=lambda w: (w.score, -w.born_tick, -w.id), reverse=True)
             elif self.variant == "admission_pv":
                 # Protection value: W_done / (eps + C_rem)
                 for w in candidates:
                     c_rem = max(1, w.total_estimated_work - w.spent_work)
                     pv = w.spent_work / (100.0 + c_rem)
-                    w.score = w.base_priority + 40.0 * pv + (w.wait_time * 0.16)
+                    w.score = w.base_priority + 40.0 * pv + (w.wait_time * self.aging_rate)
                 queue = sorted(candidates, key=lambda w: (w.score, -w.born_tick, -w.id), reverse=True)
             elif self.variant == "admission_headroom":
                 # Only admit new workflows (step 0) if remaining window tokens >= headroom_factor * 2500
@@ -299,7 +301,7 @@ class RegimeSimulationEngine:
 
                 # Score with progress weighting and aging
                 for w in candidates:
-                    w.score = w.base_priority + 0.60 * w.spent_work + (w.wait_time * 0.16)
+                    w.score = w.base_priority + 0.60 * w.spent_work + (w.wait_time * self.aging_rate)
                 queue = sorted(candidates, key=lambda w: (w.score, -w.born_tick, -w.id), reverse=True)
             else:
                 queue = list(candidates)

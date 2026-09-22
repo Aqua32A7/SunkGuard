@@ -1,0 +1,1446 @@
+{
+  "evaluation_name": "PAT Sensitivity Analysis (Exploratory Seeds 401-500)",
+  "timestamp": "2026-09-22T02:09:46Z",
+  "seeds": "401-500",
+  "seed_count": 100,
+  "pats": [
+    4,
+    8,
+    16,
+    32
+  ],
+  "loads": [
+    0.5,
+    0.7
+  ],
+  "results": {
+    "0.50": {
+      "4": {
+        "Oldest-First": {
+          "wasted_token_ratio": {
+            "mean": 0.01598,
+            "ci_95": [
+              0.01324,
+              0.01873
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.20713,
+            "ci_95": [
+              0.19826,
+              0.21601
+            ]
+          },
+          "completed_runs": {
+            "mean": 74.33,
+            "ci_95": [
+              73.11446,
+              75.54554
+            ]
+          },
+          "late_failure_count": {
+            "mean": 1.63,
+            "ci_95": [
+              1.34849,
+              1.91151
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96693,
+            "ci_95": [
+              0.96404,
+              0.96982
+            ]
+          }
+        },
+        "Progress-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.0223,
+            "ci_95": [
+              0.01901,
+              0.02559
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.21359,
+            "ci_95": [
+              0.20519,
+              0.222
+            ]
+          },
+          "completed_runs": {
+            "mean": 73.76,
+            "ci_95": [
+              72.54183,
+              74.97817
+            ]
+          },
+          "late_failure_count": {
+            "mean": 2.24,
+            "ci_95": [
+              1.90382,
+              2.57618
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96801,
+            "ci_95": [
+              0.96532,
+              0.97071
+            ]
+          }
+        },
+        "Admission-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.01697,
+            "ci_95": [
+              0.01404,
+              0.01989
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.20628,
+            "ci_95": [
+              0.19766,
+              0.21491
+            ]
+          },
+          "completed_runs": {
+            "mean": 74.4,
+            "ci_95": [
+              73.16501,
+              75.63499
+            ]
+          },
+          "late_failure_count": {
+            "mean": 1.74,
+            "ci_95": [
+              1.43942,
+              2.04058
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96807,
+            "ci_95": [
+              0.9654,
+              0.97074
+            ]
+          }
+        },
+        "paired_adm_vs_prog": {
+          "delta_waste": {
+            "mean": -0.00533,
+            "ci_95": [
+              -0.00709,
+              -0.00358
+            ]
+          },
+          "delta_fail": {
+            "mean": -0.00731,
+            "ci_95": [
+              -0.00943,
+              -0.00519
+            ]
+          },
+          "delta_wait": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "8": {
+        "Oldest-First": {
+          "wasted_token_ratio": {
+            "mean": 0.00532,
+            "ci_95": [
+              0.00365,
+              0.00699
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.14245,
+            "ci_95": [
+              0.13417,
+              0.15074
+            ]
+          },
+          "completed_runs": {
+            "mean": 79.42,
+            "ci_95": [
+              78.20213,
+              80.63787
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.59,
+            "ci_95": [
+              0.40488,
+              0.77512
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96612,
+            "ci_95": [
+              0.96316,
+              0.96908
+            ]
+          }
+        },
+        "Progress-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.00963,
+            "ci_95": [
+              0.00738,
+              0.01189
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.16205,
+            "ci_95": [
+              0.15357,
+              0.17053
+            ]
+          },
+          "completed_runs": {
+            "mean": 77.83,
+            "ci_95": [
+              76.5695,
+              79.0905
+            ]
+          },
+          "late_failure_count": {
+            "mean": 1.04,
+            "ci_95": [
+              0.79108,
+              1.28892
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96763,
+            "ci_95": [
+              0.9649,
+              0.97037
+            ]
+          }
+        },
+        "Admission-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.00536,
+            "ci_95": [
+              0.00379,
+              0.00693
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.14583,
+            "ci_95": [
+              0.13763,
+              0.15402
+            ]
+          },
+          "completed_runs": {
+            "mean": 79.16,
+            "ci_95": [
+              77.91484,
+              80.40516
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.59,
+            "ci_95": [
+              0.41595,
+              0.76405
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96732,
+            "ci_95": [
+              0.96455,
+              0.97009
+            ]
+          }
+        },
+        "paired_adm_vs_prog": {
+          "delta_waste": {
+            "mean": -0.00427,
+            "ci_95": [
+              -0.006,
+              -0.00255
+            ]
+          },
+          "delta_fail": {
+            "mean": -0.01622,
+            "ci_95": [
+              -0.01895,
+              -0.01349
+            ]
+          },
+          "delta_wait": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "16": {
+        "Oldest-First": {
+          "wasted_token_ratio": {
+            "mean": 0.00093,
+            "ci_95": [
+              0.00031,
+              0.00156
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.08916,
+            "ci_95": [
+              0.08095,
+              0.09737
+            ]
+          },
+          "completed_runs": {
+            "mean": 82.49,
+            "ci_95": [
+              81.22495,
+              83.75505
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.11,
+            "ci_95": [
+              0.03595,
+              0.18405
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96571,
+            "ci_95": [
+              0.96269,
+              0.96872
+            ]
+          }
+        },
+        "Progress-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.00379,
+            "ci_95": [
+              0.00235,
+              0.00523
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.11885,
+            "ci_95": [
+              0.11047,
+              0.12724
+            ]
+          },
+          "completed_runs": {
+            "mean": 80.79,
+            "ci_95": [
+              79.53322,
+              82.04678
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.43,
+            "ci_95": [
+              0.26496,
+              0.59504
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96752,
+            "ci_95": [
+              0.96478,
+              0.97027
+            ]
+          }
+        },
+        "Admission-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.00034,
+            "ci_95": [
+              3e-05,
+              0.00064
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.09269,
+            "ci_95": [
+              0.08443,
+              0.10096
+            ]
+          },
+          "completed_runs": {
+            "mean": 82.16,
+            "ci_95": [
+              80.86906,
+              83.45094
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.03,
+            "ci_95": [
+              -0.00402,
+              0.06402
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96714,
+            "ci_95": [
+              0.96437,
+              0.96991
+            ]
+          }
+        },
+        "paired_adm_vs_prog": {
+          "delta_waste": {
+            "mean": -0.00345,
+            "ci_95": [
+              -0.00478,
+              -0.00212
+            ]
+          },
+          "delta_fail": {
+            "mean": -0.02616,
+            "ci_95": [
+              -0.02939,
+              -0.02292
+            ]
+          },
+          "delta_wait": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "32": {
+        "Oldest-First": {
+          "wasted_token_ratio": {
+            "mean": 0.00018,
+            "ci_95": [
+              -0.00017,
+              0.00052
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.03718,
+            "ci_95": [
+              0.03114,
+              0.04323
+            ]
+          },
+          "completed_runs": {
+            "mean": 83.48,
+            "ci_95": [
+              82.19006,
+              84.76994
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.02,
+            "ci_95": [
+              -0.01968,
+              0.05968
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96601,
+            "ci_95": [
+              0.96302,
+              0.96899
+            ]
+          }
+        },
+        "Progress-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.00042,
+            "ci_95": [
+              -1e-05,
+              0.00085
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.08553,
+            "ci_95": [
+              0.0779,
+              0.09317
+            ]
+          },
+          "completed_runs": {
+            "mean": 82.19,
+            "ci_95": [
+              80.94261,
+              83.43739
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.05,
+            "ci_95": [
+              -0.00181,
+              0.10181
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96727,
+            "ci_95": [
+              0.96448,
+              0.97006
+            ]
+          }
+        },
+        "Admission-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.0393,
+            "ci_95": [
+              0.03312,
+              0.04548
+            ]
+          },
+          "completed_runs": {
+            "mean": 83.24,
+            "ci_95": [
+              81.93515,
+              84.54485
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.96733,
+            "ci_95": [
+              0.96455,
+              0.97012
+            ]
+          }
+        },
+        "paired_adm_vs_prog": {
+          "delta_waste": {
+            "mean": -0.00042,
+            "ci_95": [
+              -0.00085,
+              1e-05
+            ]
+          },
+          "delta_fail": {
+            "mean": -0.04623,
+            "ci_95": [
+              -0.05022,
+              -0.04224
+            ]
+          },
+          "delta_wait": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    },
+    "0.70": {
+      "4": {
+        "Oldest-First": {
+          "wasted_token_ratio": {
+            "mean": 0.01665,
+            "ci_95": [
+              0.01428,
+              0.01902
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.29129,
+            "ci_95": [
+              0.28431,
+              0.29826
+            ]
+          },
+          "completed_runs": {
+            "mean": 92.86,
+            "ci_95": [
+              91.74158,
+              93.97842
+            ]
+          },
+          "late_failure_count": {
+            "mean": 2.03,
+            "ci_95": [
+              1.74179,
+              2.31821
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.9433,
+            "ci_95": [
+              0.93989,
+              0.94672
+            ]
+          }
+        },
+        "Progress-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.02459,
+            "ci_95": [
+              0.0215,
+              0.02767
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.29721,
+            "ci_95": [
+              0.29011,
+              0.30431
+            ]
+          },
+          "completed_runs": {
+            "mean": 92.08,
+            "ci_95": [
+              90.94231,
+              93.21769
+            ]
+          },
+          "late_failure_count": {
+            "mean": 2.94,
+            "ci_95": [
+              2.56822,
+              3.31178
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.01,
+            "ci_95": [
+              -0.00984,
+              0.02984
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.94639,
+            "ci_95": [
+              0.94322,
+              0.94955
+            ]
+          }
+        },
+        "Admission-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.01861,
+            "ci_95": [
+              0.01581,
+              0.02142
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.29185,
+            "ci_95": [
+              0.28505,
+              0.29865
+            ]
+          },
+          "completed_runs": {
+            "mean": 92.64,
+            "ci_95": [
+              91.52353,
+              93.75647
+            ]
+          },
+          "late_failure_count": {
+            "mean": 2.29,
+            "ci_95": [
+              1.93972,
+              2.64028
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.94586,
+            "ci_95": [
+              0.94268,
+              0.94904
+            ]
+          }
+        },
+        "paired_adm_vs_prog": {
+          "delta_waste": {
+            "mean": -0.00598,
+            "ci_95": [
+              -0.00831,
+              -0.00365
+            ]
+          },
+          "delta_fail": {
+            "mean": -0.00536,
+            "ci_95": [
+              -0.00766,
+              -0.00306
+            ]
+          },
+          "delta_wait": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "8": {
+        "Oldest-First": {
+          "wasted_token_ratio": {
+            "mean": 0.00739,
+            "ci_95": [
+              0.00548,
+              0.0093
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.24543,
+            "ci_95": [
+              0.23808,
+              0.25279
+            ]
+          },
+          "completed_runs": {
+            "mean": 97.37,
+            "ci_95": [
+              96.21498,
+              98.52502
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.93,
+            "ci_95": [
+              0.68537,
+              1.17463
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.9418,
+            "ci_95": [
+              0.93831,
+              0.94528
+            ]
+          }
+        },
+        "Progress-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.01121,
+            "ci_95": [
+              0.00884,
+              0.01358
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.25831,
+            "ci_95": [
+              0.25058,
+              0.26604
+            ]
+          },
+          "completed_runs": {
+            "mean": 96.13,
+            "ci_95": [
+              94.92907,
+              97.33093
+            ]
+          },
+          "late_failure_count": {
+            "mean": 1.36,
+            "ci_95": [
+              1.0543,
+              1.6657
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.01,
+            "ci_95": [
+              -0.00984,
+              0.02984
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.94586,
+            "ci_95": [
+              0.94267,
+              0.94904
+            ]
+          }
+        },
+        "Admission-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.00664,
+            "ci_95": [
+              0.00471,
+              0.00858
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.24354,
+            "ci_95": [
+              0.23569,
+              0.25139
+            ]
+          },
+          "completed_runs": {
+            "mean": 97.72,
+            "ci_95": [
+              96.48498,
+              98.95502
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.83,
+            "ci_95": [
+              0.58246,
+              1.07754
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.94463,
+            "ci_95": [
+              0.94125,
+              0.94802
+            ]
+          }
+        },
+        "paired_adm_vs_prog": {
+          "delta_waste": {
+            "mean": -0.00457,
+            "ci_95": [
+              -0.00658,
+              -0.00255
+            ]
+          },
+          "delta_fail": {
+            "mean": -0.01477,
+            "ci_95": [
+              -0.01735,
+              -0.01219
+            ]
+          },
+          "delta_wait": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "16": {
+        "Oldest-First": {
+          "wasted_token_ratio": {
+            "mean": 0.00248,
+            "ci_95": [
+              0.00122,
+              0.00374
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.20082,
+            "ci_95": [
+              0.19261,
+              0.20903
+            ]
+          },
+          "completed_runs": {
+            "mean": 100.08,
+            "ci_95": [
+              98.88271,
+              101.27729
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.32,
+            "ci_95": [
+              0.15586,
+              0.48414
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.94029,
+            "ci_95": [
+              0.93678,
+              0.9438
+            ]
+          }
+        },
+        "Progress-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.00419,
+            "ci_95": [
+              0.00263,
+              0.00575
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.22726,
+            "ci_95": [
+              0.21864,
+              0.23588
+            ]
+          },
+          "completed_runs": {
+            "mean": 98.54,
+            "ci_95": [
+              97.29175,
+              99.78825
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.54,
+            "ci_95": [
+              0.33779,
+              0.74221
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.01,
+            "ci_95": [
+              -0.00984,
+              0.02984
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.94525,
+            "ci_95": [
+              0.9421,
+              0.94841
+            ]
+          }
+        },
+        "Admission-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.00159,
+            "ci_95": [
+              0.00079,
+              0.00238
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.19987,
+            "ci_95": [
+              0.19181,
+              0.20793
+            ]
+          },
+          "completed_runs": {
+            "mean": 100.17,
+            "ci_95": [
+              98.93951,
+              101.40049
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.18,
+            "ci_95": [
+              0.07685,
+              0.28315
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.94269,
+            "ci_95": [
+              0.93919,
+              0.94618
+            ]
+          }
+        },
+        "paired_adm_vs_prog": {
+          "delta_waste": {
+            "mean": -0.0026,
+            "ci_95": [
+              -0.0041,
+              -0.00111
+            ]
+          },
+          "delta_fail": {
+            "mean": -0.02739,
+            "ci_95": [
+              -0.03013,
+              -0.02465
+            ]
+          },
+          "delta_wait": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "32": {
+        "Oldest-First": {
+          "wasted_token_ratio": {
+            "mean": 0.00046,
+            "ci_95": [
+              -4e-05,
+              0.00095
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.14664,
+            "ci_95": [
+              0.13813,
+              0.15514
+            ]
+          },
+          "completed_runs": {
+            "mean": 100.37,
+            "ci_95": [
+              99.20948,
+              101.53052
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.06,
+            "ci_95": [
+              -0.00803,
+              0.12803
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.93992,
+            "ci_95": [
+              0.93623,
+              0.94361
+            ]
+          }
+        },
+        "Progress-Only": {
+          "wasted_token_ratio": {
+            "mean": 0.00055,
+            "ci_95": [
+              -1e-05,
+              0.0011
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.19545,
+            "ci_95": [
+              0.18641,
+              0.2045
+            ]
+          },
+          "completed_runs": {
+            "mean": 99.28,
+            "ci_95": [
+              98.04241,
+              100.51759
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.07,
+            "ci_95": [
+              -0.00053,
+              0.14053
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.02,
+            "ci_95": [
+              -0.00792,
+              0.04792
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.94536,
+            "ci_95": [
+              0.94213,
+              0.94859
+            ]
+          }
+        },
+        "Admission-Only": {
+          "wasted_token_ratio": {
+            "mean": 6e-05,
+            "ci_95": [
+              -1e-05,
+              0.00014
+            ]
+          },
+          "overall_failure_rate": {
+            "mean": 0.14699,
+            "ci_95": [
+              0.13813,
+              0.15585
+            ]
+          },
+          "completed_runs": {
+            "mean": 100.13,
+            "ci_95": [
+              98.9228,
+              101.3372
+            ]
+          },
+          "late_failure_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "step0_wait_ticks": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "starved_count": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "jain_fairness": {
+            "mean": 0.94357,
+            "ci_95": [
+              0.94011,
+              0.94703
+            ]
+          }
+        },
+        "paired_adm_vs_prog": {
+          "delta_waste": {
+            "mean": -0.00048,
+            "ci_95": [
+              -0.00105,
+              8e-05
+            ]
+          },
+          "delta_fail": {
+            "mean": -0.04846,
+            "ci_95": [
+              -0.05193,
+              -0.045
+            ]
+          },
+          "delta_wait": {
+            "mean": 0.0,
+            "ci_95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

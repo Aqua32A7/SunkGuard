@@ -18,7 +18,7 @@ In production compound AI systems (e.g., chains of LLM calls, vector database qu
 - Quantifying **sunk work at risk** ($W_{\text{sunk}}$).
 - Estimating the **marginal failure probability reduction** ($\Delta P_{\text{failure}}$) afforded by reserving downstream capacity.
 - Dynamically holding **hard** and **soft reservations** for late-stage workflows.
-- Enforcing an **aging queue** to guarantee that new workflows never suffer unbounded starvation.
+- Enforcing a **deadline-aware priority aging queue** to balance accumulated wait time against in-flight sunk progress.
 
 ---
 
@@ -149,11 +149,11 @@ $$\Delta P_{\text{failure}}(W) = S_{\text{rsv}}(W) - S_{\text{no\_rsv}}(W)$$
 
 ## 6. SunkGuard Controller Mechanics & Policies
 
-### 6.1 Admission Priority Function with Aging
-To prevent starvation of newly arriving workflows while prioritizing high-investment runs, the admission priority score for workflow $W$ waiting for resource allocation is:
+### 6.1 Admission Priority Function with Deadline-Aware Aging
+To dynamically balance urgent waiting steps against in-flight sunk investment (deadline-aware prioritization), the admission priority score for workflow $W$ waiting for resource allocation is:
 $$\text{Score}(W, t) = \text{base}_W + \alpha_{\text{aging}} \cdot \text{wait}(W, t) + \beta_{\text{sunk}} \cdot \left(\frac{W_{\text{done}}(W)}{1000}\right)$$
 - $\text{base}_W$: Inherent workflow SLA priority ($1.0 \dots 3.0$).
-- $\alpha_{\text{aging}}$: Linear aging coefficient ($0.35$). Every tick spent waiting steadily increases score, guaranteeing that any starved job eventually dominates.
+- $\alpha_{\text{aging}}$: Linear deadline-aware aging coefficient ($0.35$). Every tick spent waiting steadily increases score relative to the patience timeout ($PAT=8\text{t}, QPAT=28\text{t}$), raising the effective scheduling urgency of delayed steps before timeout occurs.
 - $\beta_{\text{sunk}}$: Sunk work coefficient ($0.6 \dots 2.4$ depending on policy).
 
 ### 6.2 Reservation Gating & Types
@@ -319,7 +319,7 @@ In steady-state Poisson arrival evaluation (seeds 51–100), `Admission-Only` st
 Based on empirical evaluations across steady-state Poisson loads, bottleneck convoy tests ($d_{\text{step}} \ge \text{PAT}$), and completion tail-latency sweeps (seeds 101–150), **no tested scenario currently justifies Full SunkGuard's added complexity over Admission-Only**.
 
 The demo and presentation lead with the honest scientific narrative:
-- **The Core Contribution:** A lightweight, progress-weighted admission queue with starvation aging (`Admission-Only`) that cuts token waste by 81–88%, boosts completed throughput, and complies with the $<2.0\times$ wait ceiling across all operating loads.
+- **The Core Contribution:** A lightweight, progress-weighted admission queue with deadline-aware priority aging (`Admission-Only`) that cuts token waste by 81–88%, boosts completed throughput, and complies with the $<2.0\times$ wait ceiling across all operating loads.
 - **The Rigorous Negative Finding:** We built a full non-oracle predictive reservation engine (`Full SunkGuard`) and thoroughly tested it across steady-state, convoy, and tail-latency benchmarks. In every scenario, advance reservations failed to beat reactive progress queueing, introducing artificial queue delay without measurable throughput or tail-latency benefits. Demonstrating why advance reservations are unnecessary is a core experimental contribution of this work.
 
 ---
@@ -379,3 +379,57 @@ Full SunkGuard is judged successful if and only if all of the following hold:
 4. **Wait Ceiling:** Full SunkGuard new work wait ratio vs Baseline satisfies $\bar{W}_{\text{full}} / \bar{W}_{\text{base}} < 2.00\text{x}$.
 5. **Goodput Reporting:** Goodput (completed tokens per simulation run) is reported alongside wasted-token ratio for all variants.
 6. **Load Generalization:** Criteria (1)–(4) must hold at $\ge 2$ of 3 evaluated loads ($\lambda \in [0.50, 0.70, 0.85]$).
+
+### 11.4 Step 2 Regime Test Disclosures
+1. **$PAT / QPAT$ Configuration Registration:**
+   The tagged evaluation (`thesis-regime-test-frozen`) executed with $PAT = 16\text{ ticks}$ and $QPAT = 40\text{ ticks}$ (configured in `core/regime.py:206` and called in `scripts/eval_regime.py:105`). While Section 11.1 registered $W_{\text{size}} = 20\text{t}$, $B_{\text{window}} = 8,000\text{ tok}$, and $d = 8\text{t}$, the numerical values for $PAT$ and $QPAT$ were omitted from the text of 11.1. $PAT$ was expanded from $8\text{t}$ to $16\text{t}$ (and $QPAT$ to $40\text{t}$) during dev-seed runs because non-preemptible bottleneck steps of duration $d=8\text{t}$ caused immediate timeouts on waiting workflows under the default $PAT=8\text{t}$.
+2. **Dev-Seed Tuning Log (Dev Seeds 1–20):**
+   - `Full SunkGuard`: 7 candidate reservation ceilings evaluated on dev seeds 1–20 ($[30\%, 40\%, 50\%, 60\%, 70\%, 80\%, 90\%]$ of window budget; optimum: $70\% = 5,600\text{ tokens}$).
+   - `Admission-Headroom`: 7 candidate headroom multiplier configs evaluated on dev seeds 1–20 ($h \in \{0.5, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5\}$; optimum: $h^* = 1.0$).
+   - `Admission-PV`: 10 candidate $\beta$ configs evaluated on dev seeds 1–20 ($\beta \in [5, 10, 20, 40, 60, 80, 120, 160, 240, 320]$; interior optimum: $\beta^* = 160.0$).
+3. **Architectural Code Separation:**
+   Regime "Full" in `core/regime.py` is **NOT** the same code as `SunkGuardController` in `core/controller.py` used by RUNTIME and the API server. In runtime `SunkGuardController`, reservations allocate continuous physical capacity units with exponential hazard estimation. In `core/regime.py`, "Full" maps predicted future steps to discrete 20-tick time windows and reserves token budget in a `WindowedTokenBucket`.
+
+---
+
+## 12. Pre-Registration: Gate 4 Evaluation (Production Generalization & Moderate Contention)
+
+> [!CAUTION]
+> **PRE-REGISTRATION STATUS: DRAFT SPECIFICATION ONLY — DO NOT EXECUTE.**
+> This section pre-registers the experimental protocol, acceptance criteria, and guardrails for Gate 4. In accordance with thesis integrity constraints, no simulations or benchmarks under Gate 4 may be executed until formal tag creation (`thesis-gate4-frozen`).
+
+### 12.1 Motivation & Benchmark Calibration
+1. **Addressing Regime Test Extremity:** In Step 2 (Regime Test), the combination of rigid 20-tick windows ($B=8,000\text{ tok}$) and 8-tick non-preemptible steps caused uncoordinated baseline failure rates of 70–92%, representing extreme system collapse. Gate 4 calibrates a **moderate windowed regime** where uncoordinated baseline failure rates remain between **15% and 30%** (matching realistic production SLOs under bursty load).
+2. **Dual-Regime Evaluation:** Gate 4 evaluates candidates simultaneously across:
+   - **Regime A (Moderate Windowed Regime):** Windowed token rate limit refilling per window with moderate multi-tick steps ($d = 3\text{–}4\text{ ticks}$, baseline failure 15–30%).
+   - **Regime B (Control Regime):** Continuous unwindowed capacity with short steps ($d \le 2\text{ ticks}$), serving as a negative control where reservations should offer no advantage.
+3. **Primary Focus on Goodput:** While wasted-token ratio measures efficiency, compound agent deployments prioritize **goodput** (total completed task tokens delivered per unit time).
+
+### 12.2 Evaluation Protocol & Dataset
+- **Held-Out Unseen Seeds:** Strictly seeds 401–500 ($n=100$ seeds).
+- **Evaluated Loads:** Fixed at $\lambda \in [0.40, 0.60, 0.80]$.
+- **Frozen Git Tag:** `thesis-gate4-frozen` created prior to execution; tagged once, run once, zero tag retargeting permitted.
+
+### 12.3 Mandatory Comparators & Equal Dev Tuning Budget
+Each parametric comparator must be tuned on dev seeds 1–20 across an identical grid budget:
+1. `Baseline`: Uncoordinated random dispatch.
+2. `Baseline-Backoff`: Distributed retries with exponential jittered backoff.
+3. `Oldest-First`: Strict workflow arrival-order queueing (`born_tick`).
+4. `Admission-Only`: Progress-weighted queueing with deadline-aware priority aging ($\alpha = 0.35$).
+5. `Admission-Headroom (Equally Tuned)`: Admission gated on unreserved window budget headroom ($h \in [0.5, 2.5]$ tuned across 7 grid points on dev seeds 1–20).
+6. `Full SunkGuard`: Advance window-indexed reservations + progress weighting + aging (reservation cap tuned across 7 grid points on dev seeds 1–20).
+
+### 12.4 Formal Acceptance Criteria & Non-Inferiority Guards
+`Full SunkGuard` is judged to succeed if and only if all of the following hold across $\ge 2$ of 3 operating loads in Regime A:
+1. **Primary Metric (Goodput Advantage):**
+   Full SunkGuard achieves a statistically significant improvement in goodput (completed tokens) over the best non-reservation comparator:
+   $$\Delta \text{Goodput} = \text{Goodput}_{\text{full}} - \text{Goodput}_{\text{best\_no\_rsv}} > 0$$
+   with the paired 95% CI strictly excluding zero ($\text{CI}_{\text{lower}} > 0$).
+2. **Waste Ratio Guard:**
+   Full SunkGuard's wasted-token ratio must not be significantly worse than the best non-reservation comparator (paired 95% CI upper bound $\le +1.0\%$).
+3. **Completion Count Non-Inferiority:**
+   Full SunkGuard completed workflows must be non-inferior to the best non-reservation comparator (paired 95% CI lower bound $\ge -1.0$ run).
+4. **Wait Ceiling:**
+   Mean new-work wait ratio vs Baseline must satisfy $\bar{W}_{\text{full}} / \bar{W}_{\text{base}} < 2.00\text{x}$.
+5. **Control Regime Guard (Regime B):**
+   In the continuous unwindowed control regime, Full SunkGuard must not degrade system throughput or exceed a $2.00\text{x}$ wait penalty.

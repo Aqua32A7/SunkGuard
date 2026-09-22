@@ -264,7 +264,7 @@ export function getStaticOverview() {
   const policy: Policy = {
     mode: 'Medium',
     reservationCeiling: 70,
-    agingRate: 0.16,
+    agingRate: 0.35,
     confidenceThreshold: 0.8,
     softThreshold: 0.5,
     predictionHorizon: 4,

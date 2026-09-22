@@ -45,6 +45,7 @@ class SimulationConfig:
     resource_specs: Optional[List[ResourceSpec]] = None
     templates: Optional[List[WorkflowTemplate]] = None
     beta_pv: float = 1.0
+    pat_override: Optional[int] = None
 
 
 @dataclass
@@ -82,12 +83,14 @@ class SimulationEngine:
                 variant=config.variant,
                 predictor=config.predictor,
                 beta_pv=config.beta_pv,
+                pat_override=config.pat_override,
             )
         else:
             self.controller = BaselineController(
                 rng=self.rng,
                 policy=config.policy,
                 variant=config.variant,
+                pat_override=config.pat_override,
             )
 
         # Simulation clock and state
