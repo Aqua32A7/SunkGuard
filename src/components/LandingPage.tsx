@@ -30,7 +30,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null)
-  const [devOtp, setDevOtp] = useState<string | null>(null)
   const [resendCooldown, setResendCooldown] = useState(0)
 
   // Refs for 6 OTP input boxes
@@ -63,7 +62,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
     if (res.success) {
       setEmail(emailToUse)
       setStep('OTP')
-      setDevOtp(res.dev_otp || null)
       setResendCooldown(res.retry_after_seconds || 30)
       setOtpDigits(['', '', '', '', '', ''])
       setRemainingAttempts(null)
@@ -141,13 +139,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
         setRemainingAttempts(res.remaining_attempts)
       }
     }
-  }
-
-  const handleAutofillDevCode = () => {
-    if (!devOtp || devOtp.length !== 6) return
-    const digits = devOtp.split('')
-    setOtpDigits(digits)
-    triggerVerification(email, devOtp)
   }
 
   return (
@@ -287,22 +278,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
               </div>
             )}
 
-            {/* Dev Demo OTP Helper Banner */}
-            {step === 'OTP' && devOtp && (
-              <div className="dev-otp-banner">
-                <div className="dev-otp-info">
-                  <span className="dev-badge">EVALUATOR HELPER</span>
-                  <span>Generated Code: <strong>{devOtp}</strong></span>
+            {/* Delivery Status Banner (Code Kept Private) */}
+            {step === 'OTP' && (
+              <div className="otp-dispatch-notice">
+                <div className="dispatch-notice-header">
+                  <Mail size={16} className="dispatch-icon" />
+                  <span>Passcode Dispatched</span>
                 </div>
-                <button
-                  type="button"
-                  className="button dev-fill-btn"
-                  onClick={handleAutofillDevCode}
-                  disabled={isLoading}
-                >
-                  <Sparkles size={13} />
-                  <span>Autofill Code</span>
-                </button>
+                <p className="dispatch-notice-desc">
+                  Check your email inbox for your 6-digit one-time code.
+                </p>
+                {!supabaseAuth.isConfigured() && (
+                  <div className="dev-mode-tip">
+                    <span>💡 Local test mode: verification code was logged in your backend server terminal.</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -387,7 +377,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
                       setStep('EMAIL')
                       setErrorMsg(null)
                       setSuccessMsg(null)
-                      setDevOtp(null)
                     }}
                     disabled={isLoading}
                   >

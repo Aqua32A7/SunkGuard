@@ -417,57 +417,45 @@ h1,h2,h3,.metric-card>strong,.ops-stat strong,.resource-big-number strong,.detai
 }
 
 /* Evaluator Helper Banner */
-.dev-otp-banner {
+/* OTP Dispatch Status Notice (Private & Secure) */
+.otp-dispatch-notice {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  background: rgba(238, 95, 20, 0.14);
-  border: 1px dashed rgba(238, 95, 20, 0.4);
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: rgba(238, 95, 20, 0.08);
+  border: 1px solid rgba(238, 95, 20, 0.25);
   border-radius: 12px;
   margin-bottom: 20px;
 }
 
-.dev-otp-info {
+.dispatch-notice-header {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff8c42;
+}
+
+.dispatch-icon {
+  color: #ee5f14;
+}
+
+.dispatch-notice-desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #cbd5e1;
+}
+
+.dev-mode-tip {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
   font-size: 11px;
-  color: #e5e7eb;
-}
-
-.dev-badge {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 700;
-  color: #ff8c42;
-  letter-spacing: 0.06em;
-}
-
-.dev-otp-info strong {
-  color: #ff8c42;
-  font-family: monospace;
-  font-size: 14px;
-  letter-spacing: 0.1em;
-}
-
-.dev-fill-btn {
-  padding: 6px 12px !important;
-  font-size: 11px !important;
-  background: #ee5f14 !important;
-  color: #ffffff !important;
-  border: none !important;
-  border-radius: 8px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 5px !important;
-  cursor: pointer !important;
-  transition: filter 0.15s !important;
-}
-
-.dev-fill-btn:hover {
-  filter: brightness(1.15);
+  line-height: 1.4;
+  color: #94a3b8;
 }
 
 /* Auth Forms */
