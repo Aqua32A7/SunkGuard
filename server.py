@@ -386,21 +386,74 @@ def verify_otp(payload: OtpVerifyPayload):
     return res
 
 
+import base64
+
+def parse_supabase_jwt(bearer_token: str) -> Optional[Dict[str, Any]]:
+    """Decodes and validates a Supabase Auth JWT token from Authorization header."""
+    clean_token = bearer_token.replace("Bearer ", "").strip()
+    parts = clean_token.split(".")
+    if len(parts) != 3:
+        return None
+    try:
+        payload_b64 = parts[1]
+        padded = payload_b64 + "=" * (-len(payload_b64) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
+        exp = payload.get("exp")
+        if exp and exp < time.time():
+            return None
+        return payload
+    except Exception:
+        return None
+
+
+@app.get("/api/auth/supabase/config")
+def get_supabase_config():
+    """Returns safe, public Supabase client configuration if configured in environment."""
+    url = os.environ.get("VITE_SUPABASE_URL", "").strip()
+    anon_key = os.environ.get("VITE_SUPABASE_ANON_KEY", "").strip()
+    is_valid = bool(url and anon_key and "your-project" not in url)
+    return {
+        "configured": is_valid,
+        "supabase_url": url if is_valid else "",
+        "auth_provider": "supabase" if is_valid else "local_fallback",
+    }
+
+
 @app.get("/api/auth/me")
 def get_current_user(authorization: Optional[str] = Header(None)):
-    """Validates session token from Authorization header and returns user profile."""
+    """Validates session token (Supabase JWT or local Bearer token) and returns user profile."""
     if not authorization:
         raise HTTPException(
             status_code=401,
             detail={"authenticated": False, "message": "Missing Authorization header."},
         )
+
+    # 1. Check if token is a Supabase JWT
+    if "eyJ" in authorization:
+        jwt_payload = parse_supabase_jwt(authorization)
+        if jwt_payload:
+            email = jwt_payload.get("email", "")
+            meta = jwt_payload.get("user_metadata", {})
+            return {
+                "authenticated": True,
+                "provider": "supabase",
+                "user": {
+                    "id": jwt_payload.get("sub", "usr_sb"),
+                    "email": email,
+                    "name": meta.get("name") or (email.split("@")[0].capitalize() if email else "Engineer"),
+                    "role": meta.get("role") or "Control Plane Engineer",
+                    "expires_at": jwt_payload.get("exp"),
+                },
+            }
+
+    # 2. Check local SQLite session database
     profile = AUTH_MANAGER.validate_session(authorization)
     if not profile:
         raise HTTPException(
             status_code=401,
             detail={"authenticated": False, "message": "Session expired or invalid. Please login again."},
         )
-    return {"authenticated": True, "user": profile}
+    return {"authenticated": True, "provider": "local_sqlite", "user": profile}
 
 
 @app.post("/api/auth/logout")

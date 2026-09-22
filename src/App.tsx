@@ -3,7 +3,8 @@ import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router
 import { Activity, AlertTriangle, BarChart3, Bell, Bot, ChevronDown, CircleHelp, Clock3, Database, Gauge, GitBranch, Layers3, LayoutDashboard, LogOut, Menu, Play, ShieldCheck, SlidersHorizontal, Sparkles, Workflow as WorkflowIcon, X } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { ActivityEvent, AuthUser, Metric, PolicyMode, Reservation, Resource, Workflow } from './domain/types'
-import { authApi, sunkGuardApi } from './services/api'
+import { sunkGuardApi } from './services/api'
+import { supabaseAuth } from './services/supabaseAuth'
 import { ActivityPage, AnalyticsPage, PoliciesPage, ReservationsPage, ResourcesPage, WorkflowsPage } from './pages/OperationsPages'
 import { ConnectivityBanner } from './components/ConnectivityBanner'
 import { LandingPage } from './components/LandingPage'
@@ -40,8 +41,8 @@ function App() {
   }
 
   useEffect(() => {
-    // Validate existing session token from SQLite database
-    void authApi.getCurrentUser().then((res) => {
+    // Validate existing session token (Supabase session or local fallback)
+    void supabaseAuth.getCurrentUser().then((res) => {
       if (res.authenticated && res.user) {
         setCurrentUser(res.user)
       } else {
@@ -49,7 +50,21 @@ function App() {
       }
       setAuthChecked(true)
     })
+
+    // Listen to Supabase Auth state changes (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED)
+    const unsubscribe = supabaseAuth.onAuthStateChange((event, user) => {
+      if (user) {
+        setCurrentUser(user)
+      } else if (event === 'SIGNED_OUT') {
+        setCurrentUser(null)
+      }
+    })
+
     refreshOverview()
+
+    return () => {
+      unsubscribe()
+    }
   }, [])
   useEffect(() => {
     if (demoPhase === 0) return
@@ -97,7 +112,7 @@ function App() {
   }
 
   const handleLogout = async () => {
-    await authApi.logout()
+    await supabaseAuth.logout()
     setCurrentUser(null)
   }
 

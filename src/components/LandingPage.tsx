@@ -14,7 +14,7 @@ import {
   Flame,
   Zap,
 } from 'lucide-react'
-import { authApi } from '../services/api'
+import { supabaseAuth } from '../services/supabaseAuth'
 import type { AuthUser } from '../domain/types'
 
 interface LandingPageProps {
@@ -57,17 +57,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
     setErrorMsg(null)
     setSuccessMsg(null)
 
-    const res = await authApi.requestOtp(emailToUse)
+    const res = await supabaseAuth.requestOtp(emailToUse)
     setIsLoading(false)
 
     if (res.success) {
       setEmail(emailToUse)
       setStep('OTP')
       setDevOtp(res.dev_otp || null)
-      setResendCooldown(res.resend_cooldown_seconds || 30)
+      setResendCooldown(res.retry_after_seconds || 30)
       setOtpDigits(['', '', '', '', '', ''])
       setRemainingAttempts(null)
-      setSuccessMsg(`Verification code sent to ${emailToUse}`)
+      setSuccessMsg(res.message || `Verification code sent to ${emailToUse}`)
       // Focus first input box shortly
       setTimeout(() => {
         inputRefs.current[0]?.focus()
@@ -129,7 +129,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
     setIsLoading(true)
     setErrorMsg(null)
 
-    const res = await authApi.verifyOtp(targetEmail, code)
+    const res = await supabaseAuth.verifyOtp(targetEmail, code)
     setIsLoading(false)
 
     if (res.success && res.token && res.user) {
@@ -171,11 +171,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
         <div className="landing-nav-badges">
           <span className="landing-pill challenge-pill">
             <Sparkles size={13} />
-            <span>Donut Challenge 02: OTP Auth</span>
+            <span>Donut Challenge 02: Supabase OTP Auth</span>
           </span>
           <span className="landing-pill status-pill">
-            <span className="status-indicator-dot online" />
-            <span>SQLite WAL · System Operational</span>
+            <span className={`status-indicator-dot ${supabaseAuth.isConfigured() ? 'online' : 'pulse'}`} />
+            <span>{supabaseAuth.isConfigured() ? 'Supabase Auth Cloud: Connected' : 'Supabase Auth: Local Dev Mode'}</span>
           </span>
         </div>
       </header>
@@ -469,15 +469,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
             <div className="auth-card-footer">
               <div className="sec-guarantee">
                 <ShieldCheck size={13} />
-                <span>Salted SHA-256 Hashing</span>
+                <span>Official Supabase Email OTP Auth</span>
               </div>
               <div className="sec-guarantee">
                 <Database size={13} />
-                <span>SQLite WAL Session Store</span>
+                <span>Encrypted Session Persistence (JWT)</span>
               </div>
               <div className="sec-guarantee">
                 <Lock size={13} />
-                <span>3-Attempt Lockout Defense</span>
+                <span>Row Level Security (RLS) Compliant</span>
               </div>
             </div>
           </div>
