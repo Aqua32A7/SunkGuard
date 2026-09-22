@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { Activity, AlertTriangle, BarChart3, Bell, Bot, ChevronDown, CircleHelp, Clock3, Database, Gauge, GitBranch, Layers3, LayoutDashboard, LogOut, Menu, Play, ShieldCheck, SlidersHorizontal, Sparkles, Workflow as WorkflowIcon, X } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { ActivityEvent, AuthUser, Metric, PolicyMode, Reservation, Resource, Workflow } from './domain/types'
@@ -12,7 +12,7 @@ import './App.css'
 import './polish.css'
 
 const navItems = [
-  { label: 'Overview', path: '/', icon: LayoutDashboard }, { label: 'Workflows', path: '/workflows', icon: WorkflowIcon },
+  { label: 'Overview', path: '/dashboard', icon: LayoutDashboard }, { label: 'Workflows', path: '/workflows', icon: WorkflowIcon },
   { label: 'Resources', path: '/resources', icon: Gauge }, { label: 'Reservations', path: '/reservations', icon: Layers3 },
   { label: 'Analytics / Experiments', path: '/analytics', icon: BarChart3 }, { label: 'Activity', path: '/activity', icon: Activity },
   { label: 'Policies', path: '/policies', icon: SlidersHorizontal },
@@ -126,42 +126,80 @@ function App() {
   if (loadError) return <div className="state-screen error-state"><AlertTriangle size={22} /><strong>Controller state unavailable</strong><span>The demo data service could not load. Refresh to retry the local frontend state.</span></div>
   if (!overview) return <div className="loading-screen"><Sparkles size={18} /> Loading controller state...</div>
   return <BrowserRouter>
-    <div className="app-shell">
-      <aside className={`sidebar ${sidebarOpen ? 'is-open' : ''}`}>
-        <div className="brand"><div className="brand-mark"><ShieldCheck size={18} /></div><div><strong>SunkGuard</strong><span>Agent control plane</span></div><button className="icon-button sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close navigation"><X size={18} /></button></div>
-        <div className="workspace-switcher"><div className="workspace-avatar">SG</div><div><strong>Demo workspace</strong><span>Simulation environment</span></div><ChevronDown size={15} /></div>
-        <nav className="nav-list">{navItems.map(({ label, path, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'} onClick={() => setSidebarOpen(false)} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}><Icon size={17} /><span>{label}</span>{label === 'Activity' && <span className="nav-dot" />}</NavLink>)}</nav>
-        <div className="sidebar-footer"><div className="system-health"><span className={`status-dot ${backendConnected ? 'connected' : 'warning'}`} /> <span>{backendConnected ? 'Controller online' : 'Mock engine'}</span><span className="health-pulse" /></div><div className="sidebar-links"><CircleHelp size={15} /> Help center <span>⌘ /</span></div><div className="sidebar-links"><SlidersHorizontal size={15} /> Workspace settings</div></div>
-      </aside>
-      {sidebarOpen && <button className="mobile-overlay" onClick={() => setSidebarOpen(false)} aria-label="Close navigation" />}
-      <main className="main-shell">
-        <Topbar
-          onOpenNavigation={() => setSidebarOpen(true)}
-          backendConnected={backendConnected}
-          isStaticDemo={sunkGuardApi.isStaticDemoMode()}
-          onToggleStaticDemo={() => {
-            const next = !sunkGuardApi.isStaticDemoMode()
-            sunkGuardApi.setStaticDemoMode(next)
-            refreshOverview()
-          }}
-          currentUser={activeUser}
-          onLogout={handleLogout}
-        />
-        <div style={{ maxWidth: '1280px', margin: '14px auto 0', padding: '0 20px' }}>
-          <ConnectivityBanner onStateChange={refreshOverview} />
-        </div>
-        <Routes>
-          <Route path="/" element={<OverviewPage {...overview} policyMode={policyMode} setPolicyMode={handlePolicyChange} onRunDemo={runDemo} demoNotice={demoNotice} />} />
-          <Route path="/login" element={<LandingPage onLoginSuccess={(user) => { setCurrentUser(user); refreshOverview(); }} />} />
-          <Route path="/workflows" element={<WorkflowsPage data={overview} onRunDemo={runDemo} onWrongPrediction={runMismatch} demoNotice={demoNotice} />} />
-          <Route path="/resources" element={<ResourcesPage data={overview} />} />
-          <Route path="/reservations" element={<ReservationsPage data={overview} />} />
-          <Route path="/analytics" element={<AnalyticsPage experiment={overview.experiment} />} />
-          <Route path="/activity" element={<ActivityPage events={overview.events} />} />
-          <Route path="/policies" element={<PoliciesPage policy={overview.policy} mode={policyMode} onChange={handlePolicyChange} />} />
-        </Routes>
-      </main>
-    </div>
+    <Routes>
+      {/* Public Landing Page without login barrier */}
+      <Route path="/" element={<LandingPage />} />
+
+      {/* Control Plane Dashboard Routes */}
+      <Route
+        path="/*"
+        element={
+          <div className="app-shell">
+            <aside className={`sidebar ${sidebarOpen ? 'is-open' : ''}`}>
+              <div className="brand">
+                <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
+                  <div className="brand-mark"><ShieldCheck size={18} /></div>
+                  <div><strong>SunkGuard</strong><span>Agent control plane</span></div>
+                </NavLink>
+                <button className="icon-button sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close navigation"><X size={18} /></button>
+              </div>
+              <div className="workspace-switcher"><div className="workspace-avatar">SG</div><div><strong>Demo workspace</strong><span>Simulation environment</span></div><ChevronDown size={15} /></div>
+              <nav className="nav-list">
+                <NavLink to="/" end onClick={() => setSidebarOpen(false)} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                  <Sparkles size={17} />
+                  <span>Landing Page</span>
+                </NavLink>
+                {navItems.map(({ label, path, icon: Icon }) => (
+                  <NavLink key={path} to={path} end={path === '/dashboard'} onClick={() => setSidebarOpen(false)} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                    <Icon size={17} />
+                    <span>{label}</span>
+                    {label === 'Activity' && <span className="nav-dot" />}
+                  </NavLink>
+                ))}
+              </nav>
+              <div className="sidebar-footer">
+                <div className="system-health">
+                  <span className={`status-dot ${backendConnected ? 'connected' : 'warning'}`} />
+                  <span>{backendConnected ? 'Controller online' : 'Mock engine'}</span>
+                  <span className="health-pulse" />
+                </div>
+                <div className="sidebar-links"><CircleHelp size={15} /> Help center <span>⌘ /</span></div>
+                <div className="sidebar-links"><SlidersHorizontal size={15} /> Workspace settings</div>
+              </div>
+            </aside>
+            {sidebarOpen && <button className="mobile-overlay" onClick={() => setSidebarOpen(false)} aria-label="Close navigation" />}
+            <main className="main-shell">
+              <Topbar
+                onOpenNavigation={() => setSidebarOpen(true)}
+                backendConnected={backendConnected}
+                isStaticDemo={sunkGuardApi.isStaticDemoMode()}
+                onToggleStaticDemo={() => {
+                  const next = !sunkGuardApi.isStaticDemoMode()
+                  sunkGuardApi.setStaticDemoMode(next)
+                  refreshOverview()
+                }}
+                currentUser={activeUser}
+                onLogout={handleLogout}
+              />
+              <div style={{ maxWidth: '1280px', margin: '14px auto 0', padding: '0 20px' }}>
+                <ConnectivityBanner onStateChange={refreshOverview} />
+              </div>
+              <Routes>
+                <Route path="/dashboard" element={<OverviewPage {...overview} policyMode={policyMode} setPolicyMode={handlePolicyChange} onRunDemo={runDemo} demoNotice={demoNotice} />} />
+                <Route path="/overview" element={<OverviewPage {...overview} policyMode={policyMode} setPolicyMode={handlePolicyChange} onRunDemo={runDemo} demoNotice={demoNotice} />} />
+                <Route path="/workflows" element={<WorkflowsPage data={overview} onRunDemo={runDemo} onWrongPrediction={runMismatch} demoNotice={demoNotice} />} />
+                <Route path="/resources" element={<ResourcesPage data={overview} />} />
+                <Route path="/reservations" element={<ReservationsPage data={overview} />} />
+                <Route path="/analytics" element={<AnalyticsPage experiment={overview.experiment} />} />
+                <Route path="/activity" element={<ActivityPage events={overview.events} />} />
+                <Route path="/policies" element={<PoliciesPage policy={overview.policy} mode={policyMode} onChange={handlePolicyChange} />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </main>
+          </div>
+        }
+      />
+    </Routes>
   </BrowserRouter>
 }
 

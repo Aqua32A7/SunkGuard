@@ -1340,3 +1340,418 @@ h1,h2,h3,.metric-card>strong,.ops-stat strong,.resource-big-number strong,.detai
   color: #ff8c42;
   font-family: monospace;
 }
+
+/* =========================================================================
+   Modern SunkGuard Landing Page (Zero Login / Direct Get Started Experience)
+   ========================================================================= */
+
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+
+.hero-get-started-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 14px 26px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, #ee5f14, #ff8c42) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(238, 95, 20, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.hero-get-started-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 30px rgba(238, 95, 20, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+  filter: brightness(1.08) !important;
+}
+
+.hero-secondary-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 13px 20px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #e5e7eb !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.hero-secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  transform: translateY(-2px) !important;
+}
+
+.landing-nav-cta {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 16px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  background: #ee5f14 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 9px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.landing-nav-cta:hover {
+  background: #ff8c42 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Glass Telemetry Preview Card (Replaces Login Card) */
+.glass-preview-card {
+  width: 100%;
+  max-width: 470px;
+  background: rgba(24, 25, 34, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  padding: 30px 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.preview-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.preview-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 11px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #34d399;
+}
+
+.preview-model-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.preview-card-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.preview-hero-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(238, 95, 20, 0.15);
+  border: 1px solid rgba(238, 95, 20, 0.3);
+  color: #ff8c42;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.preview-card-hero h3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px;
+}
+
+.preview-card-hero p {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Telemetry List */
+.preview-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+}
+
+.preview-metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+}
+
+.metric-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9ca3af;
+}
+
+.metric-icon.amber {
+  color: #ff8c42;
+}
+
+.metric-icon.purple {
+  color: #a78bfa;
+}
+
+.metric-icon.green {
+  color: #34d399;
+}
+
+.metric-highlight {
+  font-weight: 600;
+  color: #f3f4f6;
+  font-size: 12px;
+}
+
+.metric-highlight.green {
+  color: #34d399;
+}
+
+/* Protected Workflow Spotlight */
+.preview-spotlight {
+  padding: 14px 16px;
+  background: rgba(238, 95, 20, 0.07);
+  border: 1px solid rgba(238, 95, 20, 0.25);
+  border-radius: 14px;
+}
+
+.spotlight-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #ff8c42;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.spotlight-body strong {
+  display: block;
+  font-size: 14px;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.spotlight-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #cbd5e1;
+}
+
+.badge-hard {
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+}
+
+/* Big Launch Button on Card */
+.landing-launch-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 14px 20px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, #ee5f14, #ea580c) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(238, 95, 20, 0.35) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.landing-launch-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 30px rgba(238, 95, 20, 0.5) !important;
+  filter: brightness(1.1) !important;
+}
+
+.preview-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #9ca3af;
+}
+
+.check-icon {
+  color: #34d399;
+  flex-shrink: 0;
+}
+
+/* Architecture Pillars Section */
+.landing-pillars-section {
+  margin-top: 64px;
+  padding: 48px 0 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pillars-header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 40px;
+}
+
+.pillars-header h2 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 10px;
+}
+
+.pillars-header p {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+@media (max-width: 900px) {
+  .pillars-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pillar-card {
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 18px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.pillar-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(238, 95, 20, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+}
+
+.pillar-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.pillar-icon.amber {
+  background: rgba(238, 95, 20, 0.15);
+  color: #ff8c42;
+}
+
+.pillar-icon.purple {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
+
+.pillar-icon.green {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.pillar-card h3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px;
+}
+
+.pillar-card p {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0 0 16px;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.pillar-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff8c42;
+  transition: transform 0.15s ease;
+}
+
+.pillar-card:hover .pillar-link {
+  transform: translateX(3px);
+}
+
+.footer-link-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.footer-link-btn:hover {
+  color: #ff8c42;
+}
