@@ -16,6 +16,16 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 import urllib.request
 import urllib.error
+import ssl
+
+try:
+    import certifi
+    _SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+except Exception:
+    try:
+        _SSL_CONTEXT = ssl.create_default_context()
+    except Exception:
+        _SSL_CONTEXT = ssl._create_unverified_context()
 
 
 @dataclass
@@ -120,7 +130,7 @@ class GeminiProviderAdapter:
                 headers=headers,
                 method="POST",
             )
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with urllib.request.urlopen(req, timeout=15, context=_SSL_CONTEXT) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
 
             self.calls_made += 1
