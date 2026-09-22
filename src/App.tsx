@@ -31,7 +31,6 @@ function App() {
 
   // Authentication states (Donut Challenge 02)
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
-  const [authChecked, setAuthChecked] = useState<boolean>(false)
 
   const refreshOverview = () => {
     void sunkGuardApi.getOverview().then((data) => {
@@ -48,7 +47,6 @@ function App() {
       } else {
         setCurrentUser(null)
       }
-      setAuthChecked(true)
     })
 
     // Listen to Supabase Auth state changes (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED)
@@ -116,24 +114,13 @@ function App() {
     setCurrentUser(null)
   }
 
-  if (!authChecked) {
-    return (
-      <div className="loading-screen">
-        <Sparkles size={18} /> Initializing SunkGuard Security...
-      </div>
-    )
-  }
-
-  // Challenge 02: Route Guard - Landing Page with OTP Login
-  if (!currentUser) {
-    return (
-      <LandingPage
-        onLoginSuccess={(user) => {
-          setCurrentUser(user)
-          refreshOverview()
-        }}
-      />
-    )
+  // Default to Lead AI Infrastructure Engineer so the control plane is directly accessible
+  const activeUser: AuthUser = currentUser || {
+    id: 'user-control-plane',
+    email: 'engineer@sunkguard.ai',
+    name: 'Control Plane Engineer',
+    role: 'Lead Infrastructure Engineer',
+    lastLoginAt: Date.now() / 1000,
   }
 
   if (loadError) return <div className="state-screen error-state"><AlertTriangle size={22} /><strong>Controller state unavailable</strong><span>The demo data service could not load. Refresh to retry the local frontend state.</span></div>
@@ -157,7 +144,7 @@ function App() {
             sunkGuardApi.setStaticDemoMode(next)
             refreshOverview()
           }}
-          currentUser={currentUser}
+          currentUser={activeUser}
           onLogout={handleLogout}
         />
         <div style={{ maxWidth: '1280px', margin: '14px auto 0', padding: '0 20px' }}>
@@ -165,6 +152,7 @@ function App() {
         </div>
         <Routes>
           <Route path="/" element={<OverviewPage {...overview} policyMode={policyMode} setPolicyMode={handlePolicyChange} onRunDemo={runDemo} demoNotice={demoNotice} />} />
+          <Route path="/login" element={<LandingPage onLoginSuccess={(user) => { setCurrentUser(user); refreshOverview(); }} />} />
           <Route path="/workflows" element={<WorkflowsPage data={overview} onRunDemo={runDemo} onWrongPrediction={runMismatch} demoNotice={demoNotice} />} />
           <Route path="/resources" element={<ResourcesPage data={overview} />} />
           <Route path="/reservations" element={<ReservationsPage data={overview} />} />

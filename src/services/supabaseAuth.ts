@@ -35,20 +35,20 @@ export const supabaseAuth = {
   },
 
   /**
-   * Dispatches a 6-digit verification code to the user's email via Supabase.
+   * Dispatches a 6-digit verification code to the user's email via Supabase or local backend.
    */
-  async requestOtp(email: string): Promise<OtpRequestResult> {
+  async requestOtp(email: string, forceLocal: boolean = false): Promise<OtpRequestResult> {
     const cleanEmail = email.trim().toLowerCase()
     if (!cleanEmail || !cleanEmail.includes('@')) {
       return {
         success: false,
         message: 'Please provide a valid email address.',
         error: 'INVALID_EMAIL',
-        provider: isSupabaseConfigured() ? 'supabase' : 'local_dev',
+        provider: isSupabaseConfigured() && !forceLocal ? 'supabase' : 'local_dev',
       }
     }
 
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured() && !forceLocal) {
       try {
         const { error } = await supabase.auth.signInWithOtp({
           email: cleanEmail,
@@ -58,9 +58,13 @@ export const supabaseAuth = {
         })
 
         if (error) {
+          const isRateLimit = (error.message || '').toLowerCase().includes('rate limit')
+          const friendlyMessage = isRateLimit
+            ? 'Supabase email rate limit reached (free tier allows max 3 emails/hr on shared mailer). Check your inbox for the code already sent, or use SunkGuard Local Mode.'
+            : (error.message || 'Supabase failed to send verification code.')
           return {
             success: false,
-            message: error.message || 'Supabase failed to send verification code.',
+            message: friendlyMessage,
             error: error.code || 'SUPABASE_OTP_FAILED',
             provider: 'supabase',
           }
