@@ -27,12 +27,13 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from core.auth import AUTH_MANAGER
 from core.canonical import PolicyMode
 from core.connectivity import CONNECTIVITY
 from core.offline_journal import OFFLINE_JOURNAL
@@ -318,6 +319,62 @@ def get_offline_journal(limit: int = 50):
         "entries": OFFLINE_JOURNAL.get_all_entries(limit=limit),
         "unreconciled": OFFLINE_JOURNAL.get_unreconciled_workflows(),
     }
+
+
+# -----------------------------------------------------------------------------
+# Donut Challenge 02: Login Authentication with OTP Verification
+# -----------------------------------------------------------------------------
+
+class OtpRequestPayload(BaseModel):
+    email: str = Field(..., description="User's email address")
+
+
+class OtpVerifyPayload(BaseModel):
+    email: str = Field(..., description="User's email address")
+    otp: str = Field(..., description="6-digit verification passcode")
+
+
+@app.post("/api/auth/otp/request")
+def request_otp(payload: OtpRequestPayload):
+    """Generates and delivers a cryptographically secure 6-digit OTP code to user's email."""
+    res = AUTH_MANAGER.request_otp(payload.email)
+    if not res.get("success"):
+        raise HTTPException(status_code=400, detail=res)
+    return res
+
+
+@app.post("/api/auth/otp/verify")
+def verify_otp(payload: OtpVerifyPayload):
+    """Verifies OTP, creates/updates user, and issues a 24-hour Bearer session token."""
+    res = AUTH_MANAGER.verify_otp(payload.email, payload.otp)
+    if not res.get("success"):
+        raise HTTPException(status_code=401, detail=res)
+    return res
+
+
+@app.get("/api/auth/me")
+def get_current_user(authorization: Optional[str] = Header(None)):
+    """Validates session token from Authorization header and returns user profile."""
+    if not authorization:
+        raise HTTPException(
+            status_code=401,
+            detail={"authenticated": False, "message": "Missing Authorization header."},
+        )
+    profile = AUTH_MANAGER.validate_session(authorization)
+    if not profile:
+        raise HTTPException(
+            status_code=401,
+            detail={"authenticated": False, "message": "Session expired or invalid. Please login again."},
+        )
+    return {"authenticated": True, "user": profile}
+
+
+@app.post("/api/auth/logout")
+def logout(authorization: Optional[str] = Header(None)):
+    """Revokes active session."""
+    if authorization:
+        AUTH_MANAGER.revoke_session(authorization)
+    return {"success": True, "message": "Logged out successfully."}
 
 
 # -----------------------------------------------------------------------------

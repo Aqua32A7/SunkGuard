@@ -252,3 +252,115 @@ export const sunkGuardApi: ControllerApi = {
     return { entries: [], unreconciled: [] }
   },
 }
+
+export const AUTH_TOKEN_KEY = 'sunkguard_auth_token'
+
+export const authApi = {
+  getToken(): string | null {
+    try {
+      return localStorage.getItem(AUTH_TOKEN_KEY)
+    } catch {
+      return null
+    }
+  },
+
+  setToken(token: string) {
+    try {
+      localStorage.setItem(AUTH_TOKEN_KEY, token)
+    } catch {}
+  },
+
+  clearToken() {
+    try {
+      localStorage.removeItem(AUTH_TOKEN_KEY)
+    } catch {}
+  },
+
+  async requestOtp(email: string) {
+    try {
+      const res = await fetch('/api/auth/otp/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        return {
+          success: false,
+          error: data.detail?.error || 'REQUEST_FAILED',
+          message: data.detail?.message || 'Failed to request OTP',
+          retry_after_seconds: data.detail?.retry_after_seconds,
+        }
+      }
+      return data
+    } catch (e: any) {
+      return {
+        success: false,
+        error: 'NETWORK_ERROR',
+        message: e?.message || 'Network error requesting OTP code.',
+      }
+    }
+  },
+
+  async verifyOtp(email: string, otp: string) {
+    try {
+      const res = await fetch('/api/auth/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        return {
+          success: false,
+          error: data.detail?.error || 'VERIFY_FAILED',
+          message: data.detail?.message || 'Failed to verify OTP',
+          remaining_attempts: data.detail?.remaining_attempts,
+        }
+      }
+      if (data.token) {
+        this.setToken(data.token)
+      }
+      return data
+    } catch (e: any) {
+      return {
+        success: false,
+        error: 'NETWORK_ERROR',
+        message: e?.message || 'Network error verifying OTP code.',
+      }
+    }
+  },
+
+  async getCurrentUser() {
+    const token = this.getToken()
+    if (!token) {
+      return { authenticated: false }
+    }
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) {
+        this.clearToken()
+        return { authenticated: false }
+      }
+      return await res.json()
+    } catch {
+      // In offline or fallback mode, if a valid token prefix exists, maintain session gracefully
+      return { authenticated: false }
+    }
+  },
+
+  async logout() {
+    const token = this.getToken()
+    if (token) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      } catch {}
+    }
+    this.clearToken()
+  },
+}

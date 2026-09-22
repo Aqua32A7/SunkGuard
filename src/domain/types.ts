@@ -29,3 +29,20 @@ export interface ActivityEvent { id: string; type: EventType; title: string; det
 export interface Policy { mode: PolicyMode; reservationCeiling: number; agingRate: number; confidenceThreshold: number; softThreshold?: number; predictionHorizon?: number; chainDepth?: string; riskWeight?: number }
 export interface ExperimentPoint { label: string; baseline: number; sunkguard: number }
 export interface Experiment { name: string; status: string; points: ExperimentPoint[]; ablation?: Array<{ label: string; wastedTokens: number; lateFailures: number; fairness: number; waitTime: number }>; metrics?: Array<{ label: string; value: string; baseline: string; direction: 'benefit' | 'cost' }> }
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  lastLoginAt?: number;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  token?: string;
+  expires_at?: number;
+  user?: AuthUser;
+  message?: string;
+  error?: string;
+}

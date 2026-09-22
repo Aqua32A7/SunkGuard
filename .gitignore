@@ -15,6 +15,9 @@ Thumbs.db
 node_modules/
 dist/
 
-# Runtime journal logs
+# Runtime journal logs and databases
 data/*.jsonl
+data/*.db
+data/*.db-wal
+data/*.db-shm
 

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
-import { Activity, AlertTriangle, BarChart3, Bell, Bot, ChevronDown, CircleHelp, Clock3, Database, Gauge, GitBranch, Layers3, LayoutDashboard, Menu, Play, ShieldCheck, SlidersHorizontal, Sparkles, Workflow as WorkflowIcon, X } from 'lucide-react'
+import { Activity, AlertTriangle, BarChart3, Bell, Bot, ChevronDown, CircleHelp, Clock3, Database, Gauge, GitBranch, Layers3, LayoutDashboard, LogOut, Menu, Play, ShieldCheck, SlidersHorizontal, Sparkles, Workflow as WorkflowIcon, X } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import type { ActivityEvent, Metric, PolicyMode, Reservation, Resource, Workflow } from './domain/types'
-import { sunkGuardApi } from './services/api'
+import type { ActivityEvent, AuthUser, Metric, PolicyMode, Reservation, Resource, Workflow } from './domain/types'
+import { authApi, sunkGuardApi } from './services/api'
 import { ActivityPage, AnalyticsPage, PoliciesPage, ReservationsPage, ResourcesPage, WorkflowsPage } from './pages/OperationsPages'
 import { ConnectivityBanner } from './components/ConnectivityBanner'
+import { LandingPage } from './components/LandingPage'
 import './App.css'
 import './polish.css'
 
@@ -27,6 +28,10 @@ function App() {
   const [loadError, setLoadError] = useState(false)
   const [backendConnected, setBackendConnected] = useState<boolean>(false)
 
+  // Authentication states (Donut Challenge 02)
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
+  const [authChecked, setAuthChecked] = useState<boolean>(false)
+
   const refreshOverview = () => {
     void sunkGuardApi.getOverview().then((data) => {
       setOverview(data)
@@ -34,7 +39,18 @@ function App() {
     }).catch(() => setLoadError(true))
   }
 
-  useEffect(() => { refreshOverview() }, [])
+  useEffect(() => {
+    // Validate existing session token from SQLite database
+    void authApi.getCurrentUser().then((res) => {
+      if (res.authenticated && res.user) {
+        setCurrentUser(res.user)
+      } else {
+        setCurrentUser(null)
+      }
+      setAuthChecked(true)
+    })
+    refreshOverview()
+  }, [])
   useEffect(() => {
     if (demoPhase === 0) return
     const timer = window.setTimeout(async () => {
@@ -80,6 +96,31 @@ function App() {
     refreshOverview()
   }
 
+  const handleLogout = async () => {
+    await authApi.logout()
+    setCurrentUser(null)
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="loading-screen">
+        <Sparkles size={18} /> Initializing SunkGuard Security...
+      </div>
+    )
+  }
+
+  // Challenge 02: Route Guard - Landing Page with OTP Login
+  if (!currentUser) {
+    return (
+      <LandingPage
+        onLoginSuccess={(user) => {
+          setCurrentUser(user)
+          refreshOverview()
+        }}
+      />
+    )
+  }
+
   if (loadError) return <div className="state-screen error-state"><AlertTriangle size={22} /><strong>Controller state unavailable</strong><span>The demo data service could not load. Refresh to retry the local frontend state.</span></div>
   if (!overview) return <div className="loading-screen"><Sparkles size={18} /> Loading controller state...</div>
   return <BrowserRouter>
@@ -101,6 +142,8 @@ function App() {
             sunkGuardApi.setStaticDemoMode(next)
             refreshOverview()
           }}
+          currentUser={currentUser}
+          onLogout={handleLogout}
         />
         <div style={{ maxWidth: '1280px', margin: '14px auto 0', padding: '0 20px' }}>
           <ConnectivityBanner onStateChange={refreshOverview} />
@@ -119,7 +162,21 @@ function App() {
   </BrowserRouter>
 }
 
-function Topbar({ onOpenNavigation, backendConnected, isStaticDemo, onToggleStaticDemo }: { onOpenNavigation: () => void; backendConnected: boolean; isStaticDemo: boolean; onToggleStaticDemo: () => void }) {
+function Topbar({
+  onOpenNavigation,
+  backendConnected,
+  isStaticDemo,
+  onToggleStaticDemo,
+  currentUser,
+  onLogout,
+}: {
+  onOpenNavigation: () => void
+  backendConnected: boolean
+  isStaticDemo: boolean
+  onToggleStaticDemo: () => void
+  currentUser: AuthUser | null
+  onLogout: () => void
+}) {
   const location = useLocation()
   const current = navItems.find((item) => item.path === location.pathname)?.label ?? 'Overview'
   return <header className="topbar">
@@ -136,7 +193,24 @@ function Topbar({ onOpenNavigation, backendConnected, isStaticDemo, onToggleStat
       </button>
       <div className="live-indicator"><span className={`status-dot ${backendConnected ? 'connected' : 'warning'}`} /> {backendConnected ? 'Backend: Connected' : 'Demo Mode'}</div>
       <button className="icon-button" aria-label="Notifications"><Bell size={18} /><i /></button>
-      <div className="user-avatar">SG</div>
+      
+      {currentUser ? (
+        <div className="user-profile-badge">
+          <div className="user-profile-avatar">
+            {currentUser.name.slice(0, 2).toUpperCase()}
+          </div>
+          <div className="user-profile-details">
+            <span className="user-profile-name">{currentUser.name}</span>
+            <span className="user-profile-role">{currentUser.role}</span>
+          </div>
+          <button className="logout-btn" onClick={onLogout} title="Sign Out">
+            <LogOut size={13} />
+            <span>Sign out</span>
+          </button>
+        </div>
+      ) : (
+        <div className="user-avatar">SG</div>
+      )}
     </div>
   </header>
 }
