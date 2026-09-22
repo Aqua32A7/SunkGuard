@@ -22,7 +22,10 @@ In production compound AI systems (e.g., chains of LLM calls, vector database qu
 
 #### Headline #1 (The Proven Thesis Contribution: Progress-Weighted Admission + Aging)
 Progress-weighted admission queueing with deadline-aware wait aging ($\alpha = 0.35, \beta = 0.60$) decisively eliminates late-stage cascading failures:
-- **Held-Out Simulation (100 Seeds):** Cuts wasted-token ratio by **$77\%\text{--}83\%$** relative to arrival-order (oldest-first) queueing across loads ($0.34\%$ vs $2.05\%$ at load 0.50, paired 95% CI: $[-1.89\%, -1.53\%]$).
+- **Held-Out Simulation (100 Seeds):** Cuts wasted-token ratio by **$77.1\%\text{--}83.1\%$** relative to arrival-order (oldest-first) queueing across loads (source: `eval/results/gate3_ablation_results.json` and `eval/results/direct_thesis_test_results.json`):
+  * **Load 0.50:** Wasted-token ratio drops from **$1.88\%$** (Oldest-First) down to **$0.43\%$** (Admission-Only) (a $77.1\%$ relative reduction; paired 95% CI for difference: $[-1.74\%, -1.15\%]$), overall failure rate decreases from $15.62\%$ to $14.24\%$, and completed runs increase from $56.85$ to $57.62$.
+  * **Load 0.70:** Wasted-token ratio drops from **$2.96\%$** to **$0.50\%$** (an $83.1\%$ relative reduction; paired 95% CI: $[-2.85\%, -2.08\%]$), failures decrease from $25.32\%$ to $23.55\%$, and completed runs increase from $71.04$ to $72.61$.
+  * **Load 0.85:** Wasted-token ratio drops from **$3.76\%$** to **$0.71\%$** (an $81.1\%$ relative reduction; paired 95% CI: $[-3.39\%, -2.71\%]$), failures decrease from $31.96\%$ to $29.79\%$, and completed runs increase from $78.80$ to $80.89$.
 - **Real Gemini Traffic (Burst Contention):** Under live API contention bursts with concurrent multi-step workflows, admission control reduced wasted tokens from **$34.6\%$ (Oldest-First) down to $0.0\%$ (Admission-Only)**, completely preventing cascading failures and eliminating quota-wasting retry storms.
 - **Tail Coordination:** Deadline-aware priority aging raises priority as wait approaches patience timeouts, preserving strict FIFO fairness for unstarved flows while preventing early-stage starvation during downstream saturation.
 

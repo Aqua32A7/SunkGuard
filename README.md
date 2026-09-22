@@ -202,7 +202,10 @@ The research investigation yields two completed, definitive findings:
 
 ### Headline #1: Progress-Weighted Admission + Aging Eliminates Cascading Failures (Proven Contribution)
 Prioritizing compound workflows by in-flight progress with deadline-aware priority aging ($\alpha = 0.35, \beta = 0.60$) decisively resolves the sunk-cost dilemma without reserving future capacity:
-1. **77–83% Waste Reduction Across 100 Seeds:** On strictly held-out unseen seeds 151–250, Admission-Only cuts wasted-token ratio from $2.05\%$ (Oldest-First) down to $0.34\%$ at load 0.50 (paired 95% CI: $[-1.89\%, -1.53\%]$), while increasing completed runs ($14.84$ vs $13.78$) and lowering overall failure rates ($1.04\%$ vs $8.16\%$).
+1. **77–83% Waste Reduction Across 100 Seeds:** On strictly held-out unseen seeds 151–250 (source: `eval/results/gate3_ablation_results.json` and `eval/results/direct_thesis_test_results.json`), Admission-Only decisively beats Oldest-First arrival queueing:
+   - **Load 0.50:** Wasted-token ratio drops from **$1.88\%$** (Oldest-First) down to **$0.43\%$** (Admission-Only), a **$77.1\%$ relative reduction** (paired 95% CI for difference: $[-1.74\%, -1.15\%]$), while increasing completed runs ($57.62$ vs $56.85$) and decreasing overall failure rate ($14.24\%$ vs $15.62\%$).
+   - **Load 0.70:** Wasted-token ratio drops from **$2.96\%$** down to **$0.50\%$**, an **$83.1\%$ relative reduction** (paired 95% CI: $[-2.85\%, -2.08\%]$), while increasing completions ($72.61$ vs $71.04$) and decreasing failures ($23.55\%$ vs $25.32\%$).
+   - **Load 0.85:** Wasted-token ratio drops from **$3.76\%$** down to **$0.71\%$**, an **$81.1\%$ relative reduction** (paired 95% CI: $[-3.39\%, -2.71\%]$), while increasing completions ($80.89$ vs $78.80$) and decreasing failures ($29.79\%$ vs $31.96\%$).
 2. **Real-Traffic Validation Under Burst Contention:** In live multi-tenant Gemini traffic bursts (`demo/test_gemini_contention.py`), Admission-Only achieved **$0.0\%$ token waste** and $100\%$ task completion, compared to **$34.6\%$ token waste** and $66.7\%$ task dropouts under Oldest-First queueing.
 3. **Tail Coordination via Aging:** Priority aging ensures workflows waiting near their patience limit receive expedited admission, preventing early-stage starvation while preserving strict progress prioritization during downstream saturation.
 
