@@ -21,16 +21,20 @@ def main():
     # Template model step durations (pro and flash steps across the 5 templates):
     # [4, 3, 4, 4, 2, 3, 2, 3, 3, 5, 3] -> sorted: [2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 5]
     # Median simulation model-step duration = 3.0 ticks.
-    # Measured median Gemini latency = 2.9455 seconds (n = 9 calls).
+    # Production Model: gemini-3.5-flash-lite (n = 42 calls in demo/test_gemini_contention.py).
+    # Note: Prior exploratory measurement of 2.9455s (n=9) used gemini-3.6-flash;
+    # per protocol, the two are NOT blended. Only the n=42 production measurement is used.
     sim_median_model_ticks = 3.0
-    measured_median_latency_sec = 2.9455
-    n_calls = 9
-    seconds_per_tick = measured_median_latency_sec / sim_median_model_ticks  # 0.9818 s/tick
+    measured_median_latency_sec = 0.5590
+    n_calls = 42
+    model_name = "gemini-3.5-flash-lite"
+    seconds_per_tick = measured_median_latency_sec / sim_median_model_ticks  # 0.1863 s/tick
 
     print("=" * 90)
-    print("SUNKGUARD PART J: NEW-WORK WAIT RECALIBRATION TABLE")
+    print("SUNKGUARD PART J: NEW-WORK WAIT RECALIBRATION TABLE (PRODUCTION CALIBRATION)")
     print(f"Calibration basis:")
-    print(f"  - Measured Gemini median step latency: {measured_median_latency_sec:.3f}s (n={n_calls} calls in demo/traces)")
+    print(f"  - Production Model: {model_name} (n={n_calls} calls, endpoint v1)")
+    print(f"  - Measured Gemini median step latency: {measured_median_latency_sec:.4f}s")
     print(f"  - Simulation median model-step duration: {sim_median_model_ticks:.1f} ticks (from template specifications)")
     print(f"  - Calibrated tick duration: 1 tick = {seconds_per_tick:.4f} seconds")
     print("=" * 90)
