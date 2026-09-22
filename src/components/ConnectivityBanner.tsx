@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
+import { HardDrive } from 'lucide-react'
 import { sunkGuardApi } from '../services/api'
+import { OfflineStorageModal } from './OfflineStorageModal'
 
 interface ConnectivityState {
   state: 'ONLINE' | 'DISCONNECTED' | 'RECONNECTING'
@@ -29,6 +31,7 @@ export const ConnectivityBanner: React.FC<ConnectivityBannerProps> = ({ onStateC
   })
   const [isLoading, setIsLoading] = useState(false)
   const [outageTimer, setOutageTimer] = useState(0)
+  const [isStorageModalOpen, setIsStorageModalOpen] = useState(false)
 
   const fetchStatus = async () => {
     try {
@@ -129,24 +132,51 @@ export const ConnectivityBanner: React.FC<ConnectivityBannerProps> = ({ onStateC
           </span>
         </div>
 
-        <button
-          onClick={handleRestore}
-          disabled={isLoading}
-          style={{
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            padding: '7px 14px',
-            fontSize: '12px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: '0 2px 6px rgba(16, 185, 129, 0.4)',
-            transition: 'all 0.2s',
-          }}
-        >
-          {isLoading ? 'Reconnecting...' : '🔄 Restore Connection Now'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => setIsStorageModalOpen(true)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              color: '#fff',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              borderRadius: '6px',
+              padding: '7px 12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <HardDrive size={13} />
+            <span>📁 Inspect Offline Files (WAL)</span>
+          </button>
+
+          <button
+            onClick={handleRestore}
+            disabled={isLoading}
+            style={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '7px 14px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.4)',
+              transition: 'all 0.2s',
+            }}
+          >
+            {isLoading ? 'Reconnecting...' : '🔄 Restore Connection Now'}
+          </button>
+        </div>
+
+        <OfflineStorageModal
+          isOpen={isStorageModalOpen}
+          onClose={() => setIsStorageModalOpen(false)}
+        />
       </div>
     )
   }
@@ -185,62 +215,93 @@ export const ConnectivityBanner: React.FC<ConnectivityBannerProps> = ({ onStateC
 
   // ONLINE STATE
   return (
-    <div className="connectivity-banner online-active" style={{
-      background: 'rgba(15, 23, 42, 0.65)',
-      border: '1px solid rgba(34, 197, 94, 0.25)',
-      borderRadius: '10px',
-      padding: '8px 16px',
-      margin: '0 0 16px 0',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      flexWrap: 'wrap',
-      gap: '10px',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{
-          width: '8px',
-          height: '8px',
-          borderRadius: '50%',
-          background: '#22c55e',
-          boxShadow: '0 0 8px #22c55e',
-          display: 'inline-block'
-        }} />
-        <span style={{ color: '#86efac', fontSize: '12px', fontWeight: 600, letterSpacing: '0.03em' }}>
-          LIVE CONNECTIVITY
-        </span>
-        <span style={{ color: '#64748b', fontSize: '12px' }}>·</span>
-        <span style={{ color: '#94a3b8', fontSize: '12px' }}>
-          Upstream Gemini 3.5 API Active · Offline Resilience Subsystem Ready
-        </span>
-        {conn.total_outages > 0 && (
-          <span style={{ color: '#cbd5e1', fontSize: '11px', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px' }}>
-            {conn.total_outages} outage(s) survived ({Math.round(conn.total_outage_seconds)}s total) · 100% token preservation
+    <>
+      <div className="connectivity-banner online-active" style={{
+        background: 'rgba(15, 23, 42, 0.65)',
+        border: '1px solid rgba(34, 197, 94, 0.25)',
+        borderRadius: '10px',
+        padding: '8px 16px',
+        margin: '0 0 16px 0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '10px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: '#22c55e',
+            boxShadow: '0 0 8px #22c55e',
+            display: 'inline-block'
+          }} />
+          <span style={{ color: '#86efac', fontSize: '12px', fontWeight: 600, letterSpacing: '0.03em' }}>
+            LIVE CONNECTIVITY
           </span>
-        )}
+          <span style={{ color: '#64748b', fontSize: '12px' }}>·</span>
+          <span style={{ color: '#94a3b8', fontSize: '12px' }}>
+            Upstream Gemini 3.5 API Active · Offline Resilience Subsystem Ready
+          </span>
+          {conn.total_outages > 0 && (
+            <span style={{ color: '#cbd5e1', fontSize: '11px', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px' }}>
+              {conn.total_outages} outage(s) survived ({Math.round(conn.total_outage_seconds)}s total) · 100% token preservation
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => setIsStorageModalOpen(true)}
+            title="Inspect physical offline journal file (data/offline_journal.jsonl) and SQLite WAL database"
+            style={{
+              background: 'rgba(59, 130, 246, 0.12)',
+              color: '#93c5fd',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+              borderRadius: '6px',
+              padding: '5px 12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s',
+            }}
+          >
+            <HardDrive size={13} />
+            <span>📁 Inspect Offline Files (WAL)</span>
+          </button>
+
+          <button
+            onClick={handleSimulateOutage}
+            disabled={isLoading}
+            title="Simulate a 60-second internet outage to test offline admission, grace freezing, and automatic recovery"
+            style={{
+              background: 'rgba(245, 158, 11, 0.15)',
+              color: '#fbbf24',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              borderRadius: '6px',
+              padding: '5px 12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s',
+            }}
+          >
+            ⚡ Simulate 60s Outage
+          </button>
+        </div>
       </div>
 
-      <button
-        onClick={handleSimulateOutage}
-        disabled={isLoading}
-        title="Simulate a 60-second internet outage to test offline admission, grace freezing, and automatic recovery"
-        style={{
-          background: 'rgba(245, 158, 11, 0.15)',
-          color: '#fbbf24',
-          border: '1px solid rgba(245, 158, 11, 0.35)',
-          borderRadius: '6px',
-          padding: '5px 12px',
-          fontSize: '11px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          transition: 'all 0.2s',
-        }}
-      >
-        ⚡ Simulate 60s Outage
-      </button>
-    </div>
+      <OfflineStorageModal
+        isOpen={isStorageModalOpen}
+        onClose={() => setIsStorageModalOpen(false)}
+      />
+    </>
   )
 }
