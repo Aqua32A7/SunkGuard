@@ -11,3 +11,21 @@ h1,h2,h3,.metric-card>strong,.ops-stat strong,.resource-big-number strong,.detai
 @media (max-width:600px){.page-heading h1{font-size:30px}.metric-grid{grid-template-columns:1fr 1fr}.metric-card>strong{font-size:25px}.panel,.metric-card,.resource-card,.policy-card{border-radius:16px}.heading-actions{gap:7px}.heading-actions .button{padding:8px 11px}.ops-stat{border-radius:16px}.experiment-banner{border-radius:12px}}
 @media (max-width:600px){.reservation-ops-table{max-width:100%}.reservation-ops-table+.detail-drawer{}.filter-tabs.wide{flex:1;min-width:0;max-width:100%;overflow-x:auto}.toolbar-note{margin-left:0;white-space:nowrap}}
 .comparison-chart:before,.ablation-chart:before{display:flex;align-items:center;gap:8px;margin:0 0 8px;color:var(--ref-mute);font-size:10px;font-weight:500;letter-spacing:.01em;white-space:pre}.comparison-chart:before{content:'■  Baseline    ■  With progress weighting';background:linear-gradient(90deg,var(--ref-mute) 0 8px,transparent 8px 16px,var(--ref-acc) 16px 24px,transparent 24px);background-clip:text;-webkit-background-clip:text;color:transparent}.ablation-chart:before{content:'■  Wasted tokens %    ■  Late failures %    ■  Jain fairness';background:linear-gradient(90deg,var(--ref-bad) 0 8px,transparent 8px 16px,var(--ref-warn) 16px 24px,transparent 24px 32px,var(--ref-vio) 32px 40px,transparent 40px);background-clip:text;-webkit-background-clip:text;color:var(--ref-mute)}.detail-view .panel{padding:15px}.detail-view .detail-grid{gap:14px;margin-bottom:14px}.detail-view .panel-header{margin-bottom:13px}
+
+/* Workflow Table Column Alignment */
+.workflow-table .ops-table-head,
+.workflow-table .ops-row,
+.workflow-table .workflow-table-row {
+  display: grid !important;
+  grid-template-columns: 1.4fr 1.1fr 1.1fr 0.75fr 1.1fr 0.65fr 20px !important;
+  align-items: center !important;
+  gap: 14px !important;
+  box-sizing: border-box;
+}
+.workflow-table .ops-row > * {
+  min-width: 0;
+}
+.workflow-table .ops-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
