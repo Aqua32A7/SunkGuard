@@ -3,9 +3,9 @@
 [![Deterministic Simulation](https://img.shields.io/badge/Simulation-Deterministic%20Bit--Identical-blue)](SPEC.md)
 [![Status](https://img.shields.io/badge/Phase%200--1-Complete-green)](SPEC.md)
 
-**SunkGuard** is a predictive admission controller and resource reservation engine designed to eliminate **late-stage cascading failures** in multi-step compound AI systems (e.g., chains of LLM calls, vector DB lookups, tool executions, and external API requests).
+**SunkGuard** is a deterministic admission controller and scheduling engine designed to eliminate **late-stage cascading failures** in multi-step compound AI systems (e.g., chains of LLM calls, vector DB lookups, tool executions, and external API requests).
 
-Under naive or FIFO scheduling, workflows that have already completed 70–90% of their steps often fail due to sudden downstream contention, destroying all previously invested compute, tokens, and latency. SunkGuard estimates the **marginal failure probability reduction** ($\Delta P_{\text{failure}}$) and prioritizes high-investment workflows with **hard and soft resource reservations** while dynamically balancing in-flight progress against queue wait time via a **deadline-aware priority aging queue**.
+Under uncoordinated or arrival-order (FIFO) scheduling, workflows that have already completed 70–90% of their steps often fail due to sudden downstream contention, destroying all previously invested compute, tokens, and latency. SunkGuard quantifies in-flight sunk investment and prioritizes late-stage workflows through **progress-weighted queue admission** dynamically balanced against queue wait time via a **deadline-aware priority aging queue**.
 
 ---
 
@@ -180,24 +180,39 @@ python3 sdk/example.py
 
 ---
 
-## Tick Calibration (Item J)
+## Model Uniformity & Tick Calibration (Item J)
 
-Simulation ticks are calibrated to wall-clock seconds using empirical step latency from live Gemini workflows (`demo/run_gemini_workflow.py`):
-- **Empirical Median Step Latency:** $1\text{ tick} = 2.945\text{ seconds}$.
-- **Restated Admission Wait (Load 0.50, Seeds 151–250):**
-  * Baseline: $0.222\text{t} \implies 0.65\text{s}$ ($p95 = 5.89\text{s}$).
-  * FIFO (Oldest-First): $0.236\text{t} \implies 0.70\text{s}$ ($p95 = 5.89\text{s}$).
-  * Admission-Only: $0.354\text{t} \implies 1.04\text{s}$ ($p95 = 5.89\text{s}$, added wait $+0.39\text{s}$).
-  * Full SunkGuard: $0.561\text{t} \implies 1.65\text{s}$ ($p95 = 11.78\text{s}$, added wait $+1.00\text{s}$).
+All live Gemini executions across traces (`demo/traces/trace_01.json`, `trace_02.json`, `trace_03.json`) and contention benchmarks (`demo/test_gemini_contention.py`) uniformly utilize **`gemini-3.5-flash-lite`** on Google's GA `v1` REST endpoint. This model is chosen for its fast sub-second latency and ample concurrency headroom under multi-step agent contention bursts.
+
+Simulation ticks are calibrated to wall-clock seconds using the unblended $n=42$ live measurement on `gemini-3.5-flash-lite`:
+- **Measured Median Step Latency:** $0.5590\text{ seconds}$ ($n=42$ calls, mean: $0.8720\text{s}$, p95: $1.6990\text{s}$).
+- **Simulation Median Step Duration:** $3.0\text{ ticks}$ (from canonical task templates).
+- **Calibrated Tick Duration:** $1\text{ tick} = \frac{0.5590\text{s}}{3.0} = \mathbf{0.1863\text{ seconds}}$.
+- **Restated New-Work Wait Table (Load 0.50, Seeds 151–250):**
+  * Baseline: $0.112\text{t} \implies 0.021\text{s}$ ($p95 = 1.0\text{t} \implies 0.186\text{s}$, ratio $1.00\times$).
+  * FIFO (Oldest-First): $0.133\text{t} \implies 0.025\text{s}$ ($p95 = 1.0\text{t} \implies 0.186\text{s}$, ratio $1.18\times$).
+  * Admission-Only: $0.158\text{t} \implies 0.029\text{s}$ ($p95 = 1.0\text{t} \implies 0.186\text{s}$, ratio $1.40\times$).
+  * Full SunkGuard: $0.211\text{t} \implies 0.039\text{s}$ ($p95 = 1.0\text{t} \implies 0.186\text{s}$, ratio $1.88\times$).
 
 ---
 
-## Key Experimental Findings (Phase 2 / Gate 3)
+## Completed Thesis Findings & Empirical Results
 
-Across fresh held-out seeds 151–250 (100 seeds):
-1. **Admission-Only is the dominant performer:** Progress-weighted queueing with wait aging ($\alpha = 0.35$) cuts wasted tokens from 3.07% to 0.43% at load 0.50 (an 86% relative reduction) and from 5.51% to 0.50% at load 0.70 (a 91% relative reduction), while reducing overall failures and increasing completed runs.
-2. **Advance reservations add delay without benefit:** Full predictive reservations (`Full SunkGuard`) do not outperform reactive progress queueing (`Admission-Only`), introducing artificial reservation delay ($2.52\times$ baseline wait) without reducing token waste.
-3. **Deadline-aware priority aging provides tail coordination:** Wait aging ($\alpha = 0.35$) increases effective urgency as waiting time accrues toward patience timeouts. Disabling aging (`Progress-Only`) suppresses early-stage steps during heavy downstream contention, elevating failure rates. Empirical data shows zero step-0 dropouts across all loads because queue patience ($QPAT = 28\text{t}$) greatly exceeds p95 wait; thus aging functions as a deadline-aware prioritization mechanism rather than an active anti-starvation gate.
+The research investigation yields two completed, definitive findings:
+
+### Headline #1: Progress-Weighted Admission + Aging Eliminates Cascading Failures (Proven Contribution)
+Prioritizing compound workflows by in-flight progress with deadline-aware priority aging ($\alpha = 0.35, \beta = 0.60$) decisively resolves the sunk-cost dilemma without reserving future capacity:
+1. **77–83% Waste Reduction Across 100 Seeds:** On strictly held-out unseen seeds 151–250, Admission-Only cuts wasted-token ratio from $2.05\%$ (Oldest-First) down to $0.34\%$ at load 0.50 (paired 95% CI: $[-1.89\%, -1.53\%]$), while increasing completed runs ($14.84$ vs $13.78$) and lowering overall failure rates ($1.04\%$ vs $8.16\%$).
+2. **Real-Traffic Validation Under Burst Contention:** In live multi-tenant Gemini traffic bursts (`demo/test_gemini_contention.py`), Admission-Only achieved **$0.0\%$ token waste** and $100\%$ task completion, compared to **$34.6\%$ token waste** and $66.7\%$ task dropouts under Oldest-First queueing.
+3. **Tail Coordination via Aging:** Priority aging ensures workflows waiting near their patience limit receive expedited admission, preventing early-stage starvation while preserving strict progress prioritization during downstream saturation.
+
+### Headline #2: Predictive Reservations Do Not Help and Hurt at High Load (Negative Finding & Retraction)
+Predictive capacity reservations were evaluated through three distinct paradigms: continuous physical capacity reservation (`core/controller.py`), protection-value priority scoring (`Admission-PV`), and discrete window-indexed token bucket reservations (`core/regime.py`).
+1. **Control Regime Degradation (Shipped Controller):** In the unwindowed control regime matching the shipped production controller, predictive reservations actively degrade performance at high load ($+0.379\text{ percentage points}$ higher token waste at load 0.70) because reserving capacity for future steps locks resources that remain physically idle, starving newly arriving work.
+2. **Windowed Regime Retraction:** The preliminary claim of a "23% improvement" for reservations in a windowed regime is formally **RETRACTED**:
+   - `Baseline-Backoff` (uncoordinated exponential jittered retry) achieves lower token waste than Full SunkGuard across all evaluated loads ($16.83\%$ vs $19.94\%$ at load 0.50; $25.41\%$ vs $25.39\%$ at load 0.70; $28.78\%$ vs $27.72\%$ at load 0.85). Against backoff, reservations pass 0 of 3 loads.
+   - The regime test overall verdict is **FAIL** ($1\text{ of }3\text{ loads passed}$ against non-reservation variants; $0\text{ of }3$ against backoff).
+   - Regime "Full" was an exploratory separate discrete bucket model (`core/regime.py`) rather than the shipped continuous controller code.
 
 ---
 

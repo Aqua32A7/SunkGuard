@@ -3,12 +3,12 @@
   "scenario_name": "High-Volume Support Escalation",
   "agent_type": "Support resolution",
   "template_id": "support",
-  "total_latency_seconds": 1.9706,
+  "total_latency_seconds": 4.2964,
   "final_progress_pct": 75,
   "final_status": "RUNNING",
-  "tokens_spent": "3k",
-  "work_at_risk": 3.85,
-  "protection_value": 0.19,
+  "tokens_spent": "278",
+  "work_at_risk": 0.3,
+  "protection_value": 0.01,
   "steps": [
     {
       "step_index": 1,
@@ -16,14 +16,14 @@
       "resource_id": "flash",
       "units": 1,
       "prompt": "Classify this ticket: 'Enterprise client experiencing 429 quota exhaustion on critical inference pipeline.' Output severity and impact level in 30 words.",
-      "response_text": "",
-      "prompt_tokens": 0,
-      "completion_tokens": 0,
-      "total_tokens": 0,
-      "latency_seconds": 0.4497,
-      "success": false,
+      "response_text": "**Severity:** Critical (P1)\n**Impact:** High. An enterprise client's core inference pipeline is blocked by 429 quota exhaustion, threatening business operations, SLA compliance, and immediate revenue generation.",
+      "prompt_tokens": 31,
+      "completion_tokens": 44,
+      "total_tokens": 75,
+      "latency_seconds": 1.3399,
+      "success": true,
       "is_live": true,
-      "error": "HTTP Error 429: Too Many Requests"
+      "error": null
     },
     {
       "step_index": 2,
@@ -31,14 +31,14 @@
       "resource_id": "pro",
       "units": 2,
       "prompt": "Provide guidance on upgrading client tier, applying hard capacity reservation for in-flight chains, and throttling new requests. Concise, under 80 words.",
-      "response_text": "",
-      "prompt_tokens": 0,
-      "completion_tokens": 0,
-      "total_tokens": 0,
-      "latency_seconds": 1.1002,
-      "success": false,
+      "response_text": "* **Upgrade Tier:** Provisionally elevate the client\u2019s SLA status in the routing gateway to grant access to higher-capacity resource pools.\n* **Hard Reservation:** Pin dedicated compute nodes for active in-flight chains via resource-group isolation, preventing preemption.\n* **Throttle Requests:** Enforce strict rate-limiting on incoming non-critical payloads at the API gateway using token-bucket algorithms to protect baseline availability.",
+      "prompt_tokens": 30,
+      "completion_tokens": 86,
+      "total_tokens": 116,
+      "latency_seconds": 1.4871,
+      "success": true,
       "is_live": true,
-      "error": "HTTP Error 429: Too Many Requests"
+      "error": null
     },
     {
       "step_index": 3,
@@ -46,14 +46,14 @@
       "resource_id": "flash",
       "units": 1,
       "prompt": "Format the final escalation status update for executive dashboard review. One concise paragraph.",
-      "response_text": "",
-      "prompt_tokens": 0,
-      "completion_tokens": 0,
-      "total_tokens": 0,
-      "latency_seconds": 0.4205,
-      "success": false,
+      "response_text": "Critical severity incident [Incident ID] regarding [Issue Summary] remains actively contained following immediate mitigation deployment at [Time], with core system stability verified and zero ongoing data exposure risk. Cross-functional teams are completing final root-cause validation and regression testing, with full service sign-off and the comprehensive post-incident report scheduled for delivery by [Time/Date].",
+      "prompt_tokens": 15,
+      "completion_tokens": 72,
+      "total_tokens": 87,
+      "latency_seconds": 1.4688,
+      "success": true,
       "is_live": true,
-      "error": "HTTP Error 429: Too Many Requests"
+      "error": null
     }
   ]
 }

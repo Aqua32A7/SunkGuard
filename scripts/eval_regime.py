@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from core.regime import RegimeSimulationEngine
 
 
-EVAL_SEEDS = range(301, 401)  # Strictly unseen seeds 301-400 (n=100)
+EVAL_SEEDS = range(301, 401)  # Default: seeds 301-400 (n=100)
 EVAL_LOADS = [0.50, 0.70, 0.85]
 
 VARIANTS = [
@@ -64,18 +64,21 @@ def paired_diff_ci(a: List[float], b: List[float]) -> Tuple[float, List[float]]:
     return mean_and_ci(diffs)
 
 
-def run_regime_evaluation() -> Dict[str, Any]:
+def run_regime_evaluation(seeds: Any = None) -> Dict[str, Any]:
+    eval_seeds = list(seeds) if seeds is not None else list(EVAL_SEEDS)
+    seed_desc = f"{eval_seeds[0]}-{eval_seeds[-1]}" if eval_seeds else "none"
+
     print("=" * 90)
     print("SUNKGUARD STEP 2: REGIME TEST EVALUATION (SPEC SECTION 11)")
-    print(f"Seeds: 301–400 (n={len(EVAL_SEEDS)} unseen seeds) | Loads: {EVAL_LOADS}")
+    print(f"Seeds: {seed_desc} (n={len(eval_seeds)} seeds) | Loads: {EVAL_LOADS}")
     print(f"Variants: {[v[0] for v in VARIANTS]}")
     print("=" * 90)
 
     results: Dict[str, Any] = {
         "evaluation_name": "Step 2 Regime Test (SPEC Section 11)",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "seeds": "301-400",
-        "seed_count": len(EVAL_SEEDS),
+        "seeds": seed_desc,
+        "seed_count": len(eval_seeds),
         "loads": EVAL_LOADS,
         "load_results": {},
         "verdicts_per_load": {},
@@ -99,7 +102,7 @@ def run_regime_evaluation() -> Dict[str, Any]:
                 "wait": [],
             }
 
-        for s in EVAL_SEEDS:
+        for s in eval_seeds:
             for label, code in VARIANTS:
                 eng = RegimeSimulationEngine(seed=s, load_factor=load, variant=code)
                 res = eng.run(pat=16, qpat=40)
@@ -228,7 +231,10 @@ def run_regime_evaluation() -> Dict[str, Any]:
     print(f"Total Evaluation Time: {time.time() - t0_all:.2f}s")
     print("=" * 90)
 
-    out_file = Path("eval/results/regime_test_results.json")
+    if seeds is None or (eval_seeds[0] == 301 and eval_seeds[-1] == 400 and len(eval_seeds) == 100):
+        out_file = Path("eval/results/regime_test_results.json")
+    else:
+        out_file = Path(f"eval/results/regime_test_results_seeds_{seed_desc}.json")
     out_file.parent.mkdir(parents=True, exist_ok=True)
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
@@ -238,4 +244,17 @@ def run_regime_evaluation() -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    run_regime_evaluation()
+    import argparse
+    parser = argparse.ArgumentParser(description="Run regime test evaluation")
+    parser.add_argument("--seeds", type=str, default=None, help="Seed range e.g. 302-400 or 301-400")
+    args = parser.parse_args()
+
+    custom_seeds = None
+    if args.seeds:
+        if "-" in args.seeds:
+            p = args.seeds.split("-")
+            custom_seeds = range(int(p[0]), int(p[1]) + 1)
+        else:
+            custom_seeds = [int(s) for s in args.seeds.split(",")]
+
+    run_regime_evaluation(seeds=custom_seeds)

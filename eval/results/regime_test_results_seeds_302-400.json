@@ -1,0 +1,1302 @@
+{
+  "evaluation_name": "Step 2 Regime Test (SPEC Section 11)",
+  "timestamp": "2026-09-22T03:02:52Z",
+  "seeds": "302-400",
+  "seed_count": 99,
+  "loads": [
+    0.5,
+    0.7,
+    0.85
+  ],
+  "load_results": {
+    "0.5": {
+      "Baseline": {
+        "wasted_token_ratio": {
+          "mean": 0.25537,
+          "ci_95": [
+            0.24206,
+            0.26868
+          ],
+          "paired_diff_vs_base": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.69658,
+          "ci_95": [
+            0.67375,
+            0.71942
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 7.0202,
+          "ci_95": [
+            6.71877,
+            7.32164
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 41243.43434,
+          "ci_95": [
+            39550.9552,
+            42935.91348
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 4.08621,
+          "ci_95": [
+            3.78355,
+            4.38887
+          ],
+          "wait_ratio_vs_base": 1.0
+        }
+      },
+      "Baseline-Backoff": {
+        "wasted_token_ratio": {
+          "mean": 0.16829,
+          "ci_95": [
+            0.15556,
+            0.18103
+          ],
+          "paired_diff_vs_base": [
+            -0.08708,
+            -0.10331,
+            -0.07084
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.54405,
+          "ci_95": [
+            0.51409,
+            0.574
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 7.0,
+          "ci_95": [
+            6.7109,
+            7.2891
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 40881.81818,
+          "ci_95": [
+            39221.37305,
+            42542.26332
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 8.92903,
+          "ci_95": [
+            7.94823,
+            9.90983
+          ],
+          "wait_ratio_vs_base": 2.19
+        }
+      },
+      "Oldest-First": {
+        "wasted_token_ratio": {
+          "mean": 0.2455,
+          "ci_95": [
+            0.23511,
+            0.2559
+          ],
+          "paired_diff_vs_base": [
+            -0.00987,
+            -0.02441,
+            0.00468
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.69296,
+          "ci_95": [
+            0.67498,
+            0.71094
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 7.33333,
+          "ci_95": [
+            7.09671,
+            7.56995
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 43212.12121,
+          "ci_95": [
+            41789.59407,
+            44634.64835
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 5.62242,
+          "ci_95": [
+            5.16662,
+            6.07823
+          ],
+          "wait_ratio_vs_base": 1.38
+        }
+      },
+      "FIFO-Request": {
+        "wasted_token_ratio": {
+          "mean": 0.25133,
+          "ci_95": [
+            0.24013,
+            0.26252
+          ],
+          "paired_diff_vs_base": [
+            -0.00404,
+            -0.01919,
+            0.0111
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.69726,
+          "ci_95": [
+            0.67815,
+            0.71637
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 7.19192,
+          "ci_95": [
+            6.93765,
+            7.44619
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 42444.44444,
+          "ci_95": [
+            40949.2813,
+            43939.60759
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 5.38769,
+          "ci_95": [
+            4.98394,
+            5.79145
+          ],
+          "wait_ratio_vs_base": 1.32
+        }
+      },
+      "Admission-Only": {
+        "wasted_token_ratio": {
+          "mean": 0.25242,
+          "ci_95": [
+            0.24113,
+            0.2637
+          ],
+          "paired_diff_vs_base": [
+            -0.00295,
+            -0.01776,
+            0.01185
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.69692,
+          "ci_95": [
+            0.67767,
+            0.71617
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 7.17172,
+          "ci_95": [
+            6.90444,
+            7.439
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 42046.46465,
+          "ci_95": [
+            40519.37029,
+            43573.559
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 6.06287,
+          "ci_95": [
+            5.55642,
+            6.56931
+          ],
+          "wait_ratio_vs_base": 1.48
+        }
+      },
+      "Admission-PV": {
+        "wasted_token_ratio": {
+          "mean": 0.25031,
+          "ci_95": [
+            0.23939,
+            0.26122
+          ],
+          "paired_diff_vs_base": [
+            -0.00506,
+            -0.01965,
+            0.00952
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.69383,
+          "ci_95": [
+            0.67485,
+            0.71282
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 7.27273,
+          "ci_95": [
+            7.00578,
+            7.53967
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 42200.0,
+          "ci_95": [
+            40655.88369,
+            43744.11631
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 5.81096,
+          "ci_95": [
+            5.35241,
+            6.26951
+          ],
+          "wait_ratio_vs_base": 1.42
+        }
+      },
+      "Admission-Headroom": {
+        "wasted_token_ratio": {
+          "mean": 0.2223,
+          "ci_95": [
+            0.21189,
+            0.23271
+          ],
+          "paired_diff_vs_base": [
+            -0.03307,
+            -0.04791,
+            -0.01823
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.67373,
+          "ci_95": [
+            0.65535,
+            0.69211
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 7.69697,
+          "ci_95": [
+            7.47006,
+            7.92388
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 44503.0303,
+          "ci_95": [
+            43178.17086,
+            45827.88974
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 8.26529,
+          "ci_95": [
+            7.81998,
+            8.7106
+          ],
+          "wait_ratio_vs_base": 2.02
+        }
+      },
+      "Full SunkGuard": {
+        "wasted_token_ratio": {
+          "mean": 0.19943,
+          "ci_95": [
+            0.1883,
+            0.21057
+          ],
+          "paired_diff_vs_base": [
+            -0.05594,
+            -0.07208,
+            -0.03979
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.63235,
+          "ci_95": [
+            0.6123,
+            0.65239
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 8.46465,
+          "ci_95": [
+            8.25088,
+            8.67841
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 48389.89899,
+          "ci_95": [
+            47117.2489,
+            49662.54908
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 9.70098,
+          "ci_95": [
+            9.09122,
+            10.31074
+          ],
+          "wait_ratio_vs_base": 2.37
+        }
+      }
+    },
+    "0.7": {
+      "Baseline": {
+        "wasted_token_ratio": {
+          "mean": 0.35719,
+          "ci_95": [
+            0.3472,
+            0.36718
+          ],
+          "paired_diff_vs_base": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.84925,
+          "ci_95": [
+            0.83651,
+            0.862
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 4.83838,
+          "ci_95": [
+            4.55971,
+            5.11706
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 28134.34343,
+          "ci_95": [
+            26527.66942,
+            29741.01745
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 5.64806,
+          "ci_95": [
+            5.32703,
+            5.96908
+          ],
+          "wait_ratio_vs_base": 1.0
+        }
+      },
+      "Baseline-Backoff": {
+        "wasted_token_ratio": {
+          "mean": 0.25409,
+          "ci_95": [
+            0.24214,
+            0.26604
+          ],
+          "paired_diff_vs_base": [
+            -0.1031,
+            -0.11748,
+            -0.08873
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.74117,
+          "ci_95": [
+            0.71901,
+            0.76334
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 5.07071,
+          "ci_95": [
+            4.7757,
+            5.36571
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 29765.65657,
+          "ci_95": [
+            28088.94756,
+            31442.36557
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 13.45982,
+          "ci_95": [
+            12.49575,
+            14.4239
+          ],
+          "wait_ratio_vs_base": 2.38
+        }
+      },
+      "Oldest-First": {
+        "wasted_token_ratio": {
+          "mean": 0.34204,
+          "ci_95": [
+            0.33293,
+            0.35116
+          ],
+          "paired_diff_vs_base": [
+            -0.01515,
+            -0.02888,
+            -0.00141
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.84571,
+          "ci_95": [
+            0.83432,
+            0.85711
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 5.06061,
+          "ci_95": [
+            4.8243,
+            5.29691
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 30130.30303,
+          "ci_95": [
+            28718.3445,
+            31542.26156
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 7.91573,
+          "ci_95": [
+            7.42727,
+            8.40419
+          ],
+          "wait_ratio_vs_base": 1.4
+        }
+      },
+      "FIFO-Request": {
+        "wasted_token_ratio": {
+          "mean": 0.35232,
+          "ci_95": [
+            0.34228,
+            0.36236
+          ],
+          "paired_diff_vs_base": [
+            -0.00487,
+            -0.01887,
+            0.00912
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.85174,
+          "ci_95": [
+            0.83949,
+            0.86399
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 4.83838,
+          "ci_95": [
+            4.55111,
+            5.12566
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 28607.07071,
+          "ci_95": [
+            26888.99142,
+            30325.15
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 7.54005,
+          "ci_95": [
+            7.0957,
+            7.9844
+          ],
+          "wait_ratio_vs_base": 1.33
+        }
+      },
+      "Admission-Only": {
+        "wasted_token_ratio": {
+          "mean": 0.35342,
+          "ci_95": [
+            0.34433,
+            0.36252
+          ],
+          "paired_diff_vs_base": [
+            -0.00377,
+            -0.01728,
+            0.00974
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.84968,
+          "ci_95": [
+            0.8381,
+            0.86125
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 4.90909,
+          "ci_95": [
+            4.64943,
+            5.16875
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 28781.81818,
+          "ci_95": [
+            27259.01512,
+            30304.62125
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 8.69051,
+          "ci_95": [
+            8.17827,
+            9.20275
+          ],
+          "wait_ratio_vs_base": 1.54
+        }
+      },
+      "Admission-PV": {
+        "wasted_token_ratio": {
+          "mean": 0.35163,
+          "ci_95": [
+            0.3426,
+            0.36066
+          ],
+          "paired_diff_vs_base": [
+            -0.00556,
+            -0.01911,
+            0.00798
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.84765,
+          "ci_95": [
+            0.83588,
+            0.85943
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 4.9899,
+          "ci_95": [
+            4.73592,
+            5.24388
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 28901.0101,
+          "ci_95": [
+            27417.7435,
+            30384.2767
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 8.6234,
+          "ci_95": [
+            8.10216,
+            9.14465
+          ],
+          "wait_ratio_vs_base": 1.53
+        }
+      },
+      "Admission-Headroom": {
+        "wasted_token_ratio": {
+          "mean": 0.31063,
+          "ci_95": [
+            0.30146,
+            0.31979
+          ],
+          "paired_diff_vs_base": [
+            -0.04656,
+            -0.05985,
+            -0.03327
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.81984,
+          "ci_95": [
+            0.80849,
+            0.83118
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 5.88889,
+          "ci_95": [
+            5.66661,
+            6.11117
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 34011.11111,
+          "ci_95": [
+            32696.68806,
+            35325.53416
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 11.59501,
+          "ci_95": [
+            10.99437,
+            12.19566
+          ],
+          "wait_ratio_vs_base": 2.05
+        }
+      },
+      "Full SunkGuard": {
+        "wasted_token_ratio": {
+          "mean": 0.25391,
+          "ci_95": [
+            0.24169,
+            0.26613
+          ],
+          "paired_diff_vs_base": [
+            -0.10328,
+            -0.11802,
+            -0.08854
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.76382,
+          "ci_95": [
+            0.75,
+            0.77764
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 7.52525,
+          "ci_95": [
+            7.24421,
+            7.8063
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 41992.92929,
+          "ci_95": [
+            40403.50123,
+            43582.35736
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 10.55902,
+          "ci_95": [
+            9.98812,
+            11.12992
+          ],
+          "wait_ratio_vs_base": 1.87
+        }
+      }
+    },
+    "0.85": {
+      "Baseline": {
+        "wasted_token_ratio": {
+          "mean": 0.41215,
+          "ci_95": [
+            0.40464,
+            0.41965
+          ],
+          "paired_diff_vs_base": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.91838,
+          "ci_95": [
+            0.91006,
+            0.92671
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 3.21212,
+          "ci_95": [
+            2.97503,
+            3.44921
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 18987.87879,
+          "ci_95": [
+            17588.47892,
+            20387.27866
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 6.71944,
+          "ci_95": [
+            6.39251,
+            7.04637
+          ],
+          "wait_ratio_vs_base": 1.0
+        }
+      },
+      "Baseline-Backoff": {
+        "wasted_token_ratio": {
+          "mean": 0.28782,
+          "ci_95": [
+            0.27708,
+            0.29855
+          ],
+          "paired_diff_vs_base": [
+            -0.12433,
+            -0.13603,
+            -0.11263
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.81848,
+          "ci_95": [
+            0.80378,
+            0.83319
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 4.18182,
+          "ci_95": [
+            3.94118,
+            4.42246
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 24363.63636,
+          "ci_95": [
+            22947.02481,
+            25780.24792
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 14.49046,
+          "ci_95": [
+            13.71931,
+            15.2616
+          ],
+          "wait_ratio_vs_base": 2.16
+        }
+      },
+      "Oldest-First": {
+        "wasted_token_ratio": {
+          "mean": 0.39435,
+          "ci_95": [
+            0.3873,
+            0.40141
+          ],
+          "paired_diff_vs_base": [
+            -0.01779,
+            -0.02704,
+            -0.00855
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.905,
+          "ci_95": [
+            0.89749,
+            0.91251
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 3.81818,
+          "ci_95": [
+            3.59871,
+            4.03766
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 22618.18182,
+          "ci_95": [
+            21289.2621,
+            23947.10154
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 9.54948,
+          "ci_95": [
+            9.05292,
+            10.04605
+          ],
+          "wait_ratio_vs_base": 1.42
+        }
+      },
+      "FIFO-Request": {
+        "wasted_token_ratio": {
+          "mean": 0.4068,
+          "ci_95": [
+            0.39914,
+            0.41446
+          ],
+          "paired_diff_vs_base": [
+            -0.00535,
+            -0.01524,
+            0.00454
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.91487,
+          "ci_95": [
+            0.90698,
+            0.92275
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 3.40404,
+          "ci_95": [
+            3.16079,
+            3.64729
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 20150.50505,
+          "ci_95": [
+            18660.40808,
+            21640.60202
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 9.03082,
+          "ci_95": [
+            8.56747,
+            9.49416
+          ],
+          "wait_ratio_vs_base": 1.34
+        }
+      },
+      "Admission-Only": {
+        "wasted_token_ratio": {
+          "mean": 0.40606,
+          "ci_95": [
+            0.39941,
+            0.41271
+          ],
+          "paired_diff_vs_base": [
+            -0.00609,
+            -0.01478,
+            0.00261
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.91135,
+          "ci_95": [
+            0.90384,
+            0.91886
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 3.50505,
+          "ci_95": [
+            3.28556,
+            3.72454
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 20504.0404,
+          "ci_95": [
+            19206.23275,
+            21801.84806
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 10.93349,
+          "ci_95": [
+            10.37603,
+            11.49095
+          ],
+          "wait_ratio_vs_base": 1.63
+        }
+      },
+      "Admission-PV": {
+        "wasted_token_ratio": {
+          "mean": 0.403,
+          "ci_95": [
+            0.39594,
+            0.41006
+          ],
+          "paired_diff_vs_base": [
+            -0.00914,
+            -0.0183,
+            1e-05
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.90901,
+          "ci_95": [
+            0.90112,
+            0.9169
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 3.61616,
+          "ci_95": [
+            3.39059,
+            3.84173
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 20947.47475,
+          "ci_95": [
+            19626.87608,
+            22268.07342
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 10.58948,
+          "ci_95": [
+            10.03903,
+            11.13993
+          ],
+          "wait_ratio_vs_base": 1.58
+        }
+      },
+      "Admission-Headroom": {
+        "wasted_token_ratio": {
+          "mean": 0.36055,
+          "ci_95": [
+            0.35331,
+            0.3678
+          ],
+          "paired_diff_vs_base": [
+            -0.05159,
+            -0.06025,
+            -0.04294
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.87906,
+          "ci_95": [
+            0.87156,
+            0.88656
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 4.81818,
+          "ci_95": [
+            4.61205,
+            5.02431
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 27663.63636,
+          "ci_95": [
+            26463.23955,
+            28864.03318
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 13.29277,
+          "ci_95": [
+            12.66645,
+            13.9191
+          ],
+          "wait_ratio_vs_base": 1.98
+        }
+      },
+      "Full SunkGuard": {
+        "wasted_token_ratio": {
+          "mean": 0.27721,
+          "ci_95": [
+            0.26775,
+            0.28668
+          ],
+          "paired_diff_vs_base": [
+            -0.13494,
+            -0.14627,
+            -0.1236
+          ]
+        },
+        "overall_failure_rate": {
+          "mean": 0.81531,
+          "ci_95": [
+            0.8061,
+            0.82453
+          ]
+        },
+        "late_failure_rate": {
+          "mean": 0.0,
+          "ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "completed_runs": {
+          "mean": 7.17172,
+          "ci_95": [
+            6.93503,
+            7.40841
+          ]
+        },
+        "goodput_completed_tokens": {
+          "mean": 39464.64646,
+          "ci_95": [
+            38151.8745,
+            40777.41843
+          ]
+        },
+        "new_work_wait": {
+          "mean_ticks": 11.05543,
+          "ci_95": [
+            10.42739,
+            11.68347
+          ],
+          "wait_ratio_vs_base": 1.65
+        }
+      }
+    }
+  },
+  "verdicts_per_load": {
+    "0.5": {
+      "load": 0.5,
+      "best_non_reservation_variant": "Admission-Headroom",
+      "best_non_rsv_wasted_ratio": 0.2223,
+      "full_sunkguard_wasted_ratio": 0.19943,
+      "relative_waste_reduction": 0.1029,
+      "paired_waste_reduction_ci_95": [
+        0.01376,
+        0.03197
+      ],
+      "paired_done_diff_ci_95": [
+        0.57068,
+        0.96468
+      ],
+      "paired_fail_diff_ci_95": [
+        -0.05091,
+        -0.03186
+      ],
+      "wait_ratio_vs_baseline": 2.37,
+      "criterion_relative_waste_gte_20pct": false,
+      "criterion_stat_sig_ci_excludes_zero": true,
+      "criterion_non_inferiority_completed": true,
+      "criterion_non_inferiority_failure": true,
+      "criterion_wait_ceiling_lt_2x": false,
+      "load_verdict": "FAIL"
+    },
+    "0.7": {
+      "load": 0.7,
+      "best_non_reservation_variant": "Admission-Headroom",
+      "best_non_rsv_wasted_ratio": 0.31063,
+      "full_sunkguard_wasted_ratio": 0.25391,
+      "relative_waste_reduction": 0.1826,
+      "paired_waste_reduction_ci_95": [
+        0.04555,
+        0.06789
+      ],
+      "paired_done_diff_ci_95": [
+        1.35806,
+        1.91467
+      ],
+      "paired_fail_diff_ci_95": [
+        -0.06458,
+        -0.04746
+      ],
+      "wait_ratio_vs_baseline": 1.87,
+      "criterion_relative_waste_gte_20pct": false,
+      "criterion_stat_sig_ci_excludes_zero": true,
+      "criterion_non_inferiority_completed": true,
+      "criterion_non_inferiority_failure": true,
+      "criterion_wait_ceiling_lt_2x": true,
+      "load_verdict": "FAIL"
+    },
+    "0.85": {
+      "load": 0.85,
+      "best_non_reservation_variant": "Admission-Headroom",
+      "best_non_rsv_wasted_ratio": 0.36055,
+      "full_sunkguard_wasted_ratio": 0.27721,
+      "relative_waste_reduction": 0.2311,
+      "paired_waste_reduction_ci_95": [
+        0.07423,
+        0.09245
+      ],
+      "paired_done_diff_ci_95": [
+        2.11983,
+        2.58724
+      ],
+      "paired_fail_diff_ci_95": [
+        -0.06971,
+        -0.05778
+      ],
+      "wait_ratio_vs_baseline": 1.65,
+      "criterion_relative_waste_gte_20pct": true,
+      "criterion_stat_sig_ci_excludes_zero": true,
+      "criterion_non_inferiority_completed": true,
+      "criterion_non_inferiority_failure": true,
+      "criterion_wait_ceiling_lt_2x": true,
+      "load_verdict": "PASS"
+    }
+  },
+  "overall_verdict": "FAIL",
+  "passed_loads_count": 1,
+  "total_evaluated_loads": 3
+}

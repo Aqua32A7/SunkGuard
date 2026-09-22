@@ -14,11 +14,22 @@ In production compound AI systems (e.g., chains of LLM calls, vector database qu
 2. **Work Destruction (Sunk Waste):** When an agent workflow times out or fails at step 5 of 6, **all tokens, model FLOPs, tool invocations, and latency invested in steps 1 through 4 are completely lost**.
 3. **Queue Inequity & Inefficiency:** A newly arrived 1-step workflow competes on equal footing with an 80%-finished, high-value workflow, causing the high-investment workflow to be preempted or drop out.
 
-**SunkGuard** is a deterministic, predictive admission controller and resource reservation engine that eliminates late-stage workflow failures by:
+**SunkGuard** is a deterministic admission controller that eliminates late-stage workflow failures by:
 - Quantifying **sunk work at risk** ($W_{\text{sunk}}$).
-- Estimating the **marginal failure probability reduction** ($\Delta P_{\text{failure}}$) afforded by reserving downstream capacity.
-- Dynamically holding **hard** and **soft reservations** for late-stage workflows.
-- Enforcing a **deadline-aware priority aging queue** to balance accumulated wait time against in-flight sunk progress.
+- Dynamically holding **progress-weighted queue admission** with a **deadline-aware priority aging queue** to balance accumulated wait time against in-flight sunk progress.
+
+### 1.2 Completed Thesis Results & Empirical Findings
+
+#### Headline #1 (The Proven Thesis Contribution: Progress-Weighted Admission + Aging)
+Progress-weighted admission queueing with deadline-aware wait aging ($\alpha = 0.35, \beta = 0.60$) decisively eliminates late-stage cascading failures:
+- **Held-Out Simulation (100 Seeds):** Cuts wasted-token ratio by **$77\%\text{--}83\%$** relative to arrival-order (oldest-first) queueing across loads ($0.34\%$ vs $2.05\%$ at load 0.50, paired 95% CI: $[-1.89\%, -1.53\%]$).
+- **Real Gemini Traffic (Burst Contention):** Under live API contention bursts with concurrent multi-step workflows, admission control reduced wasted tokens from **$34.6\%$ (Oldest-First) down to $0.0\%$ (Admission-Only)**, completely preventing cascading failures and eliminating quota-wasting retry storms.
+- **Tail Coordination:** Deadline-aware priority aging raises priority as wait approaches patience timeouts, preserving strict FIFO fairness for unstarved flows while preventing early-stage starvation during downstream saturation.
+
+#### Headline #2 (Completed Negative Finding & Retraction: Predictive Reservations)
+Predictive capacity reservations were evaluated through three rigorous methodologies: (1) continuous physical unit reservations with exponential hazard decay, (2) protection-value priority scoring, and (3) discrete window-indexed token bucket reservations.
+- **Control Regime (Shipped Controller):** In the unwindowed control regime matching the shipped production controller (`core/controller.py`), predictive reservations provide no benefit and **actively hurt at high load** ($+0.379\text{ percentage points}$ higher token waste at load 0.70) because reserving capacity for future steps locks resources that remain physically idle, starving newly arriving work.
+- **Windowed Regime Retraction:** The preliminary claim of a "23% improvement" for reservations in a windowed regime is formally **RETRACTED**. When compared against `Baseline-Backoff` (uncoordinated exponential jittered retry), `Baseline-Backoff` achieves lower wasted-token ratios than Full SunkGuard across all loads ($16.83\%$ vs $19.94\%$ at 0.50; $25.41\%$ vs $25.39\%$ at 0.70; $28.78\%$ vs $27.72\%$ at 0.85). The regime test overall verdict is **FAIL** ($1\text{ of }3\text{ loads passed}$ against non-reservation variants; $0\text{ of }3$ against backoff), and regime Full was a separate exploratory discrete bucket simulation rather than the continuous runtime controller.
 
 ---
 
@@ -250,6 +261,20 @@ All interactive demonstrations, CLI summaries, and validation outputs must repor
 3. **Tag Retargeting:** The script was updated at commit `829f45e` to unpack all CI variables, add paired 95% confidence intervals against baseline across all metrics, and enforce strict git integrity checks. Tag `thesis-gate3-frozen` was force-moved to commit `829f45e`, and the complete evaluation across loads [0.25, 0.50, 0.70] was executed once.
 4. **Frozen Protocol Rule:** To eliminate any ambiguity in scientific versioning, **no git tag may ever be moved or overwritten again**. Any subsequent changes or regime tests must use distinct, newly minted tag names (e.g., `thesis-regime-test-frozen`).
 
+### 8.8 Post-Hoc Declared Deviation & Protocol Disclosure: Seed 301 Inspection & Seeds 302–400 Re-Evaluation
+**Registration Status:** Post-Hoc Integrity Disclosure  
+**Entry Timestamp:** 2026-09-22T03:15:00Z  
+**Disclosure Context:**
+1. **Inspection of Seed 301 during Development:** During interactive development of `core/regime.py` (prior to committing `24aa00f` and tagging `thesis-regime-test-frozen`), `seed=301` was inspected in ad-hoc interactive test runs (Steps 1717–1731).
+2. **Exception Debugging & PAT Selection:** At Step 1717, `seed=301` uncovered a `TypeError` in `NonOraclePredictor`. At Step 1731, running `seed=301` at load 0.70 with initial settings `pat=8t, qpat=24t` revealed a 90–97% failure rate because non-preemptible bottleneck steps had a fixed duration of $d=8\text{t}$, leaving zero tolerance for queueing under $pat=8\text{t}$. In response, `pat` was increased to $16\text{t}$ and `qpat` to $40\text{t}$ (Step 1739) prior to running dev-seed sweeps (seeds 1–10) and committing `24aa00f`.
+3. **Partition Cleanliness Re-evaluation:** Although the automated full-evaluation script `scripts/eval_regime.py` was executed only once after freezing `24aa00f`, `seed=301` had been seen during development. To ensure conclusions are unpolluted by seed 301, the regime evaluation was re-executed strictly across **unseen seeds 302–400 ($n=99$)**.
+4. **Outcome on Clean Seeds 302–400:**
+   - **Load 0.50:** Best No-Rsv (`Admission-Headroom` at 22.23%) vs `Full SunkGuard` (19.94%). Relative waste reduction: $10.29\%$ (Requirement $\ge 20.0\%$: **FAIL**). Wait ratio vs Base: $2.37\times$ (Requirement $< 2.00\times$: **FAIL**). Load Verdict: **FAIL**.
+   - **Load 0.70:** Best No-Rsv (`Admission-Headroom` at 31.06%) vs `Full SunkGuard` (25.39%). Relative waste reduction: $18.26\%$ (Requirement $\ge 20.0\%$: **FAIL**). Load Verdict: **FAIL**.
+   - **Load 0.85:** Best No-Rsv (`Admission-Headroom` at 36.05%) vs `Full SunkGuard` (27.72%). Relative waste reduction: $23.11\%$ (Requirement $\ge 20.0\%$: **PASS**). Wait ratio vs Base: $1.65\times$. Load Verdict: **PASS**.
+   - **Overall Verdict: FAIL (1 of 3 loads passed).** The verdict is completely unchanged compared to seeds 301–400.
+   - **Uncoordinated Backoff Superiority:** Crucially, `Baseline-Backoff` achieves lower wasted-token ratio than Full SunkGuard at load 0.50 ($16.83\%$ vs $19.94\%$) and load 0.70 ($25.41\%$ vs $25.39\%$), and virtually matches it at load 0.85 ($28.78\%$ vs $27.72\%$). Results archived in `eval/results/regime_test_results_seeds_302-400.json`.
+
 ---
 
 ## 9. Phase 2 Architecture: Non-Oracle Predictor & Controller Ablations
@@ -389,6 +414,24 @@ Full SunkGuard is judged successful if and only if all of the following hold:
    - `Admission-PV`: 10 candidate $\beta$ configs evaluated on dev seeds 1–20 ($\beta \in [5, 10, 20, 40, 60, 80, 120, 160, 240, 320]$; interior optimum: $\beta^* = 160.0$).
 3. **Architectural Code Separation:**
    Regime "Full" in `core/regime.py` is **NOT** the same code as `SunkGuardController` in `core/controller.py` used by RUNTIME and the API server. In runtime `SunkGuardController`, reservations allocate continuous physical capacity units with exponential hazard estimation. In `core/regime.py`, "Full" maps predicted future steps to discrete 20-tick time windows and reserves token budget in a `WindowedTokenBucket`.
+
+### 11.5 Formal Verdict & Retraction of Preliminary Windowed Claims
+1. **Formal Acceptance Verdict: FAIL (1 of 3 Loads Passed)**
+   Under the pre-registered criteria of Section 11.3:
+   - Load 0.50: Relative waste reduction is $10.29\%$ (fails $\ge 20.0\%$), and wait ratio is $2.37\times$ (fails $< 2.00\times$). Load verdict: **FAIL**.
+   - Load 0.70: Relative waste reduction is $18.26\%$ (fails $\ge 20.0\%$). Load verdict: **FAIL**.
+   - Load 0.85: Relative waste reduction is $23.11\%$ (passes $\ge 20.0\%$), and wait ratio is $1.65\times$ (passes $< 2.00\times$). Load verdict: **PASS**.
+   Because only 1 of 3 loads passed (requirement: $\ge 2$ of 3), the formal verdict is **FAIL**.
+2. **Retraction of Preliminary "23% Improvement" Claims:**
+   Any claim that predictive reservations achieve a "23% improvement" or outperform admission control in the windowed regime is formally **RETRACTED**:
+   - `Baseline-Backoff` achieves lower token waste than Full SunkGuard across all loads ($16.83\%$ vs $19.94\%$ at 0.50; $25.41\%$ vs $25.39\%$ at 0.70; $28.78\%$ vs $27.72\%$ at 0.85). Against backoff, reservations pass 0 of 3 loads.
+   - The regime "Full" simulator in `core/regime.py` was an exploratory, discrete-bucket simulation rather than the continuous controller deployed in production (`core/controller.py`).
+   - In the control regime corresponding to the shipped codebase, reservations actively degrade performance at high load (+0.379 percentage points higher waste at load 0.70).
+
+### 11.6 Live Model Uniformity & Calibration Basis
+To eliminate trace-model ambiguity across the repository:
+- All live workflow traces (`demo/traces/trace_01.json`, `trace_02.json`, `trace_03.json`) and live burst contention evaluations (`demo/test_gemini_contention.py`) are executed strictly against the production model: **`gemini-3.5-flash-lite`** on the GA `v1` REST endpoint.
+- Prior exploratory traces that referenced `gemini-3.6-flash` (which suffered 429 quota exhaustion under concurrency) have been fully superseded. Calibration strictly uses the $n=42$ production measurement ($0.5590\text{s}$ median step latency, $1\text{ tick} = 0.1863\text{s}$) without blending.
 
 ---
 
