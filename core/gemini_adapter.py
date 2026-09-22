@@ -115,6 +115,19 @@ class GeminiProviderAdapter:
                 error=f"GEMINI_TOKEN_CAP ({self.token_cap}) reached.",
             )
 
+        # Circuit breaker check: if offline or simulated outage active, halt immediate network attempt
+        from core.connectivity import CONNECTIVITY
+        if not CONNECTIVITY.is_online:
+            return GeminiUsageResult(
+                success=False,
+                prompt_tokens=0,
+                completion_tokens=0,
+                total_tokens=0,
+                response_text="",
+                is_live=True,
+                error="NETWORK_OUTAGE: Internet connection unavailable (circuit broken)",
+            )
+
         model_name = self.model.replace("models/", "")
         endpoint = f"https://generativelanguage.googleapis.com/v1/models/{model_name}:generateContent?key={self.api_key}"
         headers = {"Content-Type": "application/json"}
@@ -133,6 +146,7 @@ class GeminiProviderAdapter:
             with urllib.request.urlopen(req, timeout=15, context=_SSL_CONTEXT) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
 
+            CONNECTIVITY.report_network_success()
             self.calls_made += 1
             usage = data.get("usageMetadata", {})
             prompt_tok = usage.get("promptTokenCount", len(prompt.split()) * 4)
@@ -158,6 +172,31 @@ class GeminiProviderAdapter:
                 is_live=True,
             )
         except Exception as e:
+            err_str = str(e)
+            is_net_err = any(
+                phrase in err_str.lower()
+                for phrase in (
+                    "urlopen error",
+                    "timed out",
+                    "connection refused",
+                    "network is unreachable",
+                    "temporary failure in name resolution",
+                    "nodename nor servname provided",
+                    "socket",
+                )
+            )
+            if is_net_err:
+                CONNECTIVITY.report_network_failure()
+                return GeminiUsageResult(
+                    success=False,
+                    prompt_tokens=0,
+                    completion_tokens=0,
+                    total_tokens=0,
+                    response_text="",
+                    is_live=True,
+                    error=f"NETWORK_OUTAGE: {err_str}",
+                )
+
             return GeminiUsageResult(
                 success=False,
                 prompt_tokens=0,
@@ -165,5 +204,5 @@ class GeminiProviderAdapter:
                 total_tokens=0,
                 response_text="",
                 is_live=True,
-                error=str(e),
+                error=err_str,
             )

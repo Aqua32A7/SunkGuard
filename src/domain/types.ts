@@ -1,4 +1,4 @@
-export type WorkflowStatus = 'RUNNING' | 'WAITING' | 'COMPLETED' | 'FAILED'
+export type WorkflowStatus = 'RUNNING' | 'WAITING' | 'COMPLETED' | 'FAILED' | 'OFFLINE_PAUSED' | 'QUEUED_OFFLINE'
 export type ReservationType = 'HARD' | 'SOFT' | 'NONE'
 export type ReservationStatus = 'ACTIVE' | 'EXPIRING' | 'RELEASED'
 export type ResourceType = 'Model tokens' | 'API quota' | 'Concurrency' | 'Database'

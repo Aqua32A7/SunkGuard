@@ -731,7 +731,9 @@ class SunkGuardRuntimeManager:
 
     def get_overview(self) -> Dict[str, Any]:
         """Returns the full data structure consumed by frontend sunkGuardApi.getOverview()."""
+        from core.connectivity import CONNECTIVITY
         return {
+            "connectivity": CONNECTIVITY.to_dict(),
             "events": [e.to_frontend_dict() for e in self.events],
             "experiment": self.get_experiment(),
             "metrics": self.get_metrics(),
@@ -882,13 +884,20 @@ class SunkGuardRuntimeManager:
                 "state": "current" if i == 0 else "queued",
             })
 
-        first_step_label = planned_steps[0].get("label", "Initializing")
+        from core.connectivity import CONNECTIVITY
+        from core.offline_journal import OFFLINE_JOURNAL
+
+        is_offline = not CONNECTIVITY.is_online
+        initial_status = "QUEUED_OFFLINE" if is_offline else "RUNNING"
+        first_step_label = (
+            "Queued in Local Journal (Offline)" if is_offline else planned_steps[0].get("label", "Initializing")
+        )
 
         new_wf = {
             "id": wf_id,
             "name": name,
             "agentType": agent_type,
-            "status": "RUNNING",
+            "status": initial_status,
             "progress": 0,
             "workAtRisk": 0.0,
             "currentStep": first_step_label,
@@ -910,19 +919,73 @@ class SunkGuardRuntimeManager:
         }
         self.workflows_store[wf_id] = new_wf
 
-        self._record_event(
-            CanonicalEventType.WORKFLOW_STARTED,
-            f"Workflow {wf_id} registered",
-            f"{name} ({agent_type}) started. Confidence: {confidence:.2f} -> {reservation_type} reservation.",
-            workflow_id=wf_id,
-            category="Controller",
-            ui_type="info",
-        )
+        if is_offline:
+            CONNECTIVITY.stats.offline_queued_count += 1
+            OFFLINE_JOURNAL.record_workflow_queued(new_wf)
+            self._record_event(
+                CanonicalEventType.WORKFLOW_QUEUED,
+                f"Workflow {wf_id} enqueued offline",
+                f"{name} safely stored in local WAL during outage with priority scoring active.",
+                workflow_id=wf_id,
+                category="OfflineResilience",
+                ui_type="warning",
+            )
+        else:
+            self._record_event(
+                CanonicalEventType.WORKFLOW_STARTED,
+                f"Workflow {wf_id} registered",
+                f"{name} ({agent_type}) started. Confidence: {confidence:.2f} -> {reservation_type} reservation.",
+                workflow_id=wf_id,
+                category="Controller",
+                ui_type="info",
+            )
+
         return {
             "workflowId": wf_id,
             "accepted": True,
             "confidence": confidence,
             "reservationType": reservation_type,
+            "status": initial_status,
+        }
+
+    def freeze_workflow_offline(
+        self,
+        workflow_id: str,
+        step: str,
+        partial_result: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Gracefully freezes an in-flight workflow during internet outage, halting PAT timeout clock."""
+        wf = self.workflows_store.get(workflow_id)
+        if not wf:
+            return {"error": f"Workflow {workflow_id} not found"}
+
+        from core.connectivity import CONNECTIVITY
+        from core.offline_journal import OFFLINE_JOURNAL
+
+        wf["status"] = "OFFLINE_PAUSED"
+        wf["currentStep"] = f"Paused at {step}"
+        wf["updatedAt"] = "now"
+        CONNECTIVITY.stats.frozen_workflows_count += 1
+
+        OFFLINE_JOURNAL.record_workflow_frozen(
+            workflow_id=workflow_id,
+            step_index=wf.get("step_index", 0),
+            spent_tokens=wf.get("spent_tokens_raw", 0),
+            partial_result=partial_result,
+        )
+
+        self._record_event(
+            CanonicalEventType.WORKFLOW_QUEUED,
+            f"Workflow {workflow_id} frozen offline",
+            f"{wf['name']} paused at {step}: {wf.get('tokensSpent', '0')} tokens protected from timeout waste",
+            workflow_id=workflow_id,
+            category="OfflineResilience",
+            ui_type="warning",
+        )
+        return {
+            "workflowId": workflow_id,
+            "status": "OFFLINE_PAUSED",
+            "protectedTokens": wf.get("spent_tokens_raw", 0),
         }
 
     def request_step_admission(
@@ -932,7 +995,7 @@ class SunkGuardRuntimeManager:
         resource_id: str = "gemini",
         units: int = 1,
     ) -> Dict[str, Any]:
-        """Evaluates admission and capacity for a step."""
+        """Evaluates admission and capacity for a step with offline circuit breaking."""
         wf = self.workflows_store.get(workflow_id)
         if not wf:
             raise KeyError(f"Workflow '{workflow_id}' not found.")
@@ -950,6 +1013,34 @@ class SunkGuardRuntimeManager:
         elif res_key not in ("pro", "flash", "search", "code", "vdb", "crm"):
             res_key = "pro"
 
+        from core.connectivity import CONNECTIVITY
+
+        # Offline handling: external network resources vs local tools
+        is_external = res_key in ("pro", "flash", "search", "crm")
+        if not CONNECTIVITY.is_online and is_external:
+            # If workflow has already completed steps, freeze it safely!
+            if wf.get("step_index", 0) > 0 or wf.get("spent_tokens_raw", 0) > 0:
+                self.freeze_workflow_offline(workflow_id, step)
+                return {
+                    "workflowId": workflow_id,
+                    "step": step,
+                    "decision": "paused_offline",
+                    "resource": res_key,
+                    "allocatedUnits": 0,
+                    "notice": "Internet outage detected: workflow frozen in Local Safe Mode to protect sunk tokens.",
+                }
+            else:
+                wf["status"] = "QUEUED_OFFLINE"
+                wf["currentStep"] = f"Queued offline for {res_key}"
+                return {
+                    "workflowId": workflow_id,
+                    "step": step,
+                    "decision": "queued_offline",
+                    "resource": res_key,
+                    "allocatedUnits": 0,
+                }
+
+        # If it's a local tool (code runner, local DB) or online: normal allocation
         res = self.rm.get(res_key)
         holding_hard = units if wf.get("reservationType") == "HARD" else 0
 

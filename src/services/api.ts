@@ -28,6 +28,19 @@ export interface ControllerApi {
   demoStep: () => Promise<{ phase: number; notice: string }>
   demoReset: (seed?: number) => Promise<{ reset: boolean; seed?: number }>
   demoMismatch: () => Promise<{ notice: string; success: boolean }>
+  getConnectivity: () => Promise<{
+    state: 'ONLINE' | 'DISCONNECTED' | 'RECONNECTING'
+    is_online: boolean
+    simulated_outage: boolean
+    outage_elapsed_seconds: number
+    total_outages: number
+    total_outage_seconds: number
+    frozen_workflows: number
+    offline_queued: number
+  }>
+  simulateOutage: (durationSeconds?: number) => Promise<{ simulating: boolean; duration_seconds: number; state: string; notice: string }>
+  restoreConnectivity: () => Promise<{ restored: boolean; state: string; reconciliation: any }>
+  getOfflineJournal: () => Promise<{ entries: any[]; unreconciled: any[] }>
   isBackendConnected: () => boolean | null
   isStaticDemoMode: () => boolean
   setStaticDemoMode: (enabled: boolean) => void
@@ -187,5 +200,55 @@ export const sunkGuardApi: ControllerApi = {
       notice: 'Mismatch injected · predicted Gemini → actual Python tool → stale reservation released → re-planning → new reservation.',
       success: true,
     }
+  },
+
+  async getConnectivity() {
+    try {
+      const res = await fetch('/api/connectivity')
+      if (res.ok) return await res.json()
+    } catch {}
+    return {
+      state: 'ONLINE',
+      is_online: true,
+      simulated_outage: false,
+      outage_elapsed_seconds: 0,
+      total_outages: 0,
+      total_outage_seconds: 0,
+      frozen_workflows: 0,
+      offline_queued: 0,
+    }
+  },
+
+  async simulateOutage(durationSeconds = 60) {
+    try {
+      const res = await fetch('/api/connectivity/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration_seconds: durationSeconds }),
+      })
+      if (res.ok) return await res.json()
+    } catch {}
+    return {
+      simulating: true,
+      duration_seconds: durationSeconds,
+      state: 'DISCONNECTED',
+      notice: `Simulating ${durationSeconds}s outage`,
+    }
+  },
+
+  async restoreConnectivity() {
+    try {
+      const res = await fetch('/api/connectivity/restore', { method: 'POST' })
+      if (res.ok) return await res.json()
+    } catch {}
+    return { restored: true, state: 'ONLINE', reconciliation: {} }
+  },
+
+  async getOfflineJournal() {
+    try {
+      const res = await fetch('/api/connectivity/journal')
+      if (res.ok) return await res.json()
+    } catch {}
+    return { entries: [], unreconciled: [] }
   },
 }

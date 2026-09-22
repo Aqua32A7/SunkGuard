@@ -34,7 +34,13 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from core.canonical import PolicyMode
+from core.connectivity import CONNECTIVITY
+from core.offline_journal import OFFLINE_JOURNAL
+from core.reconciler import RECONCILER
 from core.runtime import RUNTIME
+
+# Start background network health prober
+CONNECTIVITY.start_prober()
 
 app = FastAPI(
     title="SunkGuard Control Plane API",
@@ -263,6 +269,54 @@ def run_gemini(payload: GeminiRunRequest):
         "total_tokens": res.total_tokens,
         "response_text": res.response_text,
         "error": res.error,
+    }
+
+
+# -----------------------------------------------------------------------------
+# Intermittent Connectivity & Offline Resilience Endpoints
+# -----------------------------------------------------------------------------
+
+class SimulateOutageRequest(BaseModel):
+    duration_seconds: float = Field(60.0, description="Duration of simulated outage in seconds")
+
+
+@app.get("/api/connectivity")
+def get_connectivity():
+    """Returns real-time connectivity status, outage timer, and offline statistics."""
+    return CONNECTIVITY.to_dict()
+
+
+@app.post("/api/connectivity/simulate")
+def simulate_outage(payload: Optional[SimulateOutageRequest] = None):
+    """Triggers a software-simulated network outage for evaluation demonstrations."""
+    duration = payload.duration_seconds if payload else 60.0
+    CONNECTIVITY.simulate_outage(duration_seconds=duration)
+    return {
+        "simulating": True,
+        "duration_seconds": duration,
+        "state": CONNECTIVITY.state.value,
+        "notice": f"Simulating {duration}s network outage. SunkGuard entering Local Safe Mode.",
+    }
+
+
+@app.post("/api/connectivity/restore")
+def restore_connectivity():
+    """Immediately restores connectivity and triggers automatic reconciliation."""
+    CONNECTIVITY.restore_connectivity()
+    res = RECONCILER.reconcile()
+    return {
+        "restored": True,
+        "state": CONNECTIVITY.state.value,
+        "reconciliation": res,
+    }
+
+
+@app.get("/api/connectivity/journal")
+def get_offline_journal(limit: int = 50):
+    """Returns durable audit log of events and workflows recorded during outages."""
+    return {
+        "entries": OFFLINE_JOURNAL.get_all_entries(limit=limit),
+        "unreconciled": OFFLINE_JOURNAL.get_unreconciled_workflows(),
     }
 
 
